@@ -6,26 +6,26 @@ from collections import namedtuple
 #%%
 Note = namedtuple("Note", ["start", "delta", "note_txt"])
                 
-class TaskWindow(tk.Tk):
+class SchedulerWindow(tk.Tk):
     
     def __init__(self):
         super().__init__()
         self.font = tk.font.nametofont("TkDefaultFont")
         self.font.config(size=14, family="Times", weight="bold")
         
-        self.but = tk.Button(self, text="exit", command=self._app_exit) #, width=50, height=50)
-        self.but.pack()
+        tk.Button(self, text="exit", command=self._app_exit).pack()
+        
         
         self.notes = []   # list of notes
         
-        self._window_task()
+        self._window_scheduler()
         self._check_tasks()
         # self.update()
     
-    def _window_task(self):
+    def _window_scheduler(self):
         win = tk.Toplevel(self)
-        win.title("Task")
-        win.attributes("-topmost", 1)
+        win.title("Scheduler")
+        # win.attributes("-topmost", 1)
         win.geometry("300x300")
         
         tk.Label(win, text="Input your note").pack()
@@ -44,7 +44,7 @@ class TaskWindow(tk.Tk):
         tk.Button(win, text="remind in 5 sec", command=self._save_note).pack()
         
         # import pdb; pdb.set_trace()
-        self.update_idletasks()
+        # self.update_idletasks()
 
     def _clear_placeholder(self, event):
         self.txt.delete("0.0", "end")
@@ -72,5 +72,5 @@ class TaskWindow(tk.Tk):
         sys.exit()
         
 if __name__ == "__main__":
-    root = TaskWindow()
+    root = SchedulerWindow()
     root.mainloop()

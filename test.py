@@ -4,16 +4,16 @@ from collections import namedtuple
 from datetime import datetime, timedelta
 
 from main import App
-from scheduler import TaskWindow, Note
+from scheduler import SchedulerWindow, Note
 #%%
-@unittest.skip
+# @unittest.skip
 class TestApp(unittest.TestCase):
     
     def setUp(self):
         self.root = App()
-        self.root.general_properties()
-        self.root.set_widgets()
-        self.root.current_time()
+        self.root._general_properties()
+        self.root._set_widgets()
+        self.root._current_time()
         self.root.dooneevent()
         
     def tearDown(self):
@@ -22,33 +22,33 @@ class TestApp(unittest.TestCase):
     # def test_root_children(self):
     #     set(self.root.children().values())
     
-    def test_button_task_exists(self):
+    def test_button_sched_exists(self):
         but_task = self.root.winfo_children()[-1] ##########
         expected = tk.Button
         self.assertEqual(expected, type(but_task))
         
-    def test_button_task_text(self):
+    def test_button_sched_text(self):
         but_task = self.root.winfo_children()[-1]
         expected = "task"
         self.assertEqual(expected, but_task["text"])
         
-    def test_create_task_win(self):
-        self.root.create_task()
+    def test_create_sched_win(self):
+        self.root._create_task()
         childs = (type(i) for i in self.root.winfo_children())
         self.assertIn(tk.Toplevel, childs)
 
 
 # @unittest.skip        
-class TestTaskWindow(unittest.TestCase):
+class TestSchedulerWindow(unittest.TestCase):
 
     def setUp(self):
-        self.root = TaskWindow()
-        self.root._window_task()
+        self.root = SchedulerWindow()
+        self.root._window_scheduler()
      
     def tearDown(self):
         self.root.destroy()
         
-    def test_window_task_exists(self):
+    def test_window_sched_exists(self):
         childs = (type(i) for i in self.root.winfo_children())
         self.assertIn(tk.Toplevel, childs)
         
