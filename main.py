@@ -3,15 +3,19 @@ import tkinter.font
 import sys
 from datetime import datetime, timedelta
 import time
+from task import TaskWindow
 #%%
-
-class App(tk.Tk):
+class App(TaskWindow, tk.Tk):
     
     def __init__(self):
-        super().__init__()
+        tk.Tk.__init__(self)
+                
+        self.notes = []   # list of notes
+        
         self._general_properties()
         self._set_widgets()
         self._current_time()
+        self._check_tasks()
         
     def _general_properties(self):
         self.font = tk.font.nametofont("TkDefaultFont")
@@ -28,22 +32,24 @@ class App(tk.Tk):
         self.but_exit = tk.Button(self, text="exit", command=self._app_exit)
         self.but_exit.pack(side=tk.LEFT)
         
-        self.but_task = tk.Button(self, text="task", command=self._create_task)
+        self.but_task = tk.Button(self, text="task", command=self._window_task)
         self.but_task.pack(side=tk.BOTTOM)
     
     def _current_time(self):
         time_string = time.strftime("%H:%M:%S %p")
         self.label_time.config(text=time_string)
         self.after(1000, self._current_time)
-        
-    def _create_task(self):
-        win = tk.Toplevel(self)
-        win.attributes("-topmost", 1)
-        win.title("Create task")
-        win.geometry("300x300")
-        tk.Label(win, text="Input your task").pack()
-        # import pdb; pdb.set_trace()
-        
+
+    def _check_tasks(self):
+        for i, (start, delta, txt) in enumerate(self.notes):
+            now = datetime.now()
+
+            if now - start > delta:
+                note = self.notes.pop(i)
+                self._window_task(text=note[2])
+                
+        self.after(1000, self._check_tasks)            
+    
     def _app_exit(self):
         self.destroy()
         sys.exit()
@@ -52,6 +58,3 @@ class App(tk.Tk):
 if __name__ == "__main__":        
     root = App()
     root.mainloop()
-
-#%%
-        

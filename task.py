@@ -3,69 +3,59 @@ import tkinter.font
 import sys
 from datetime import datetime, timedelta
 from collections import namedtuple
+import csv
 #%%
+
 Note = namedtuple("Note", ["start", "delta", "note_txt"])
-                
+
+               
 class TaskWindow(tk.Tk):
     
     def __init__(self):
         super().__init__()
-        self.font = tk.font.nametofont("TkDefaultFont")
-        self.font.config(size=14, family="Times", weight="bold")
-        
-        self.but = tk.Button(self, text="exit", command=self._app_exit) #, width=50, height=50)
-        self.but.pack()
-        
-        self.notes = []   # list of notes
-        
-        self._window_task()
-        self._check_tasks()
-        # self.update()
+        self.pattern_time = "%Y-%m-%d %H:%M:%S"
     
-    def _window_task(self):
-        win = tk.Toplevel(self)
-        win.title("Task")
-        win.attributes("-topmost", 1)
-        win.geometry("300x300")
-        
-        tk.Label(win, text="Input your note").pack()
+    def _window_task(self, text=None):
+        self.win_task = tk.Toplevel(self)
+        self.win_task.title("Task")
+        self.win_task.attributes("-topmost", 1)
+        self.win_task.geometry("300x300")
         
         font_txt = ("times", 13, "normal")
-        self.txt = tk.Text(win, bg="light yellow", font=font_txt, height=8)
-        self.txt.insert("1.0", "Input your note and choose time to remind")
-        self.txt.bind("<FocusIn>", self._clear_placeholder)
-        # import pdb; pdb.set_trace()
-        self.txt.pack(fill=tk.X) #side=tk.LEFT, expand=True) # #expand=True,)
-        # self.sb = tk.Scrollbar(self.txt)
-        # self.sb.pack(side=tk.RIGHT, fill=tk.BOTH)
-        
-        
-        tk.Button(win, text="exit", command=self._app_exit).pack(side=tk.LEFT)   # !!!!!!!!!!!!!          
-        tk.Button(win, text="remind in 5 sec", command=self._save_note).pack()
-        
-        # import pdb; pdb.set_trace()
-        self.update_idletasks()
+        self.txt_task = tk.Text(self.win_task, bg="light yellow", font=font_txt, height=8)
 
+        if text:
+            text = text
+        else:
+            text = "Input your note"
+            self.txt_task.bind("<FocusIn>", self._clear_placeholder)    
+        
+        self.txt_task.insert("1.0", text)
+        self.txt_task.pack(fill=tk.X) #side=tk.LEFT, expand=True) # #expand=True,)
+        
+        tk.Button(self.win_task, text="exit", command=self._app_exit).pack(side=tk.LEFT)   # !!!!!!!!!!!!!          
+        tk.Button(self.win_task, text="remind in 5 sec", command=self._save_note).pack()
+        
     def _clear_placeholder(self, event):
-        self.txt.delete("0.0", "end")
+        self.txt_task.delete("0.0", "end")
         
     def _save_note(self):
-        txt = self.txt.get(1.0, "end")
+        txt = self.txt_task.get(1.0, "end")
         start = datetime.now()
-        delta = timedelta(seconds=5)
+        delta = 5
         note = Note(start, delta, txt)
-        self.notes.append(note)
-
-
-    def _check_tasks(self):
-        for i, (start, delta, txt) in enumerate(self.notes):
-            now = datetime.now()
-
-            if now - start > delta:
-                note = self.notes.pop(i)
-                print(note)
-                
-        self.after(1000, self._check_tasks)        
+        
+        with open("tasks.csv", "a", newline='') as csvfile:
+            fieldnames = ("start", "delta", "task")
+            dct = {
+                "start": f"{start.strftime('%Y-%m-%d %H:%M:%S')}",
+                "delta": f"seconds={delta}",
+                "task": "{txt}"
+                }
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writerow(dct)
+        
+        self.win_task.destroy()
         
     def _app_exit(self):
         self.destroy()
@@ -73,4 +63,7 @@ class TaskWindow(tk.Tk):
         
 if __name__ == "__main__":
     root = TaskWindow()
+    root.font = tk.font.nametofont("TkDefaultFont")
+    root.font.config(size=14, family="Times", weight="bold")
+    root._window_task()
     root.mainloop()
