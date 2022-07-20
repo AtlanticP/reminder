@@ -4,8 +4,7 @@ from collections import namedtuple
 from datetime import datetime, timedelta
 
 from main import App
-from task import TaskWindow
-from task import Note
+from scheduler import TaskWindow, Note
 #%%
 @unittest.skip
 class TestApp(unittest.TestCase):
