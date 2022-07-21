@@ -4,16 +4,14 @@ import sys
 from datetime import datetime, timedelta
 from collections import namedtuple
 import csv
+import os
 #%%
-
-Note = namedtuple("Note", ["start", "delta", "note_txt"])
-
-               
+              
 class TaskWindow(tk.Tk):
     
+    _pattern_time = "%Y-%m-%d %H:%M:%S"
     def __init__(self):
         super().__init__()
-        self.pattern_time = "%Y-%m-%d %H:%M:%S"
     
     def _window_task(self, text=None):
         self.win_task = tk.Toplevel(self)
@@ -43,14 +41,13 @@ class TaskWindow(tk.Tk):
         txt = self.txt_task.get(1.0, "end")
         start = datetime.now()
         delta = 5
-        note = Note(start, delta, txt)
         
         with open("tasks.csv", "a", newline='') as csvfile:
             fieldnames = ("start", "delta", "task")
             dct = {
                 "start": f"{start.strftime('%Y-%m-%d %H:%M:%S')}",
                 "delta": f"seconds={delta}",
-                "task": "{txt}"
+                "task": f"{txt}"
                 }
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writerow(dct)
@@ -62,6 +59,11 @@ class TaskWindow(tk.Tk):
         sys.exit()
         
 if __name__ == "__main__":
+    
+    fname = "tasks.csv"
+    if not os.path.isfile(fname):
+        raise FileNotFoundError("It must be created tasks.csv file in the cwd with header 'start,delta,task'")
+        
     root = TaskWindow()
     root.font = tk.font.nametofont("TkDefaultFont")
     root.font.config(size=14, family="Times", weight="bold")
