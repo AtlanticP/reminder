@@ -10,6 +10,7 @@ import os
 class TaskWindow(tk.Tk):
     
     _pattern_time = "%Y-%m-%d %H:%M:%S"
+    
     def __init__(self):
         super().__init__()
     

@@ -4,14 +4,21 @@ import sys
 from datetime import datetime, timedelta
 import time
 from task import TaskWindow
+import os
+import csv
 #%%
 class App(TaskWindow, tk.Tk):
     
     def __init__(self):
         tk.Tk.__init__(self)
                 
-        self.notes = []   # list of notes
-        
+        self.fname = "tasks.csv" # file where tasks are stored
+
+        if not os.path.isfile(self.fname):
+            with open(self.fname, "w") as file:
+                writer = csv.writer(file)
+                writer.writerow(["start", "delta", "task"])
+                
         self._general_properties()
         self._set_widgets()
         self._current_time()
@@ -41,13 +48,31 @@ class App(TaskWindow, tk.Tk):
         self.after(1000, self._current_time)
 
     def _check_tasks(self):
-        for i, (start, delta, txt) in enumerate(self.notes):
-            now = datetime.now()
-
-            if now - start > delta:
-                note = self.notes.pop(i)
-                self._window_task(text=note[2])
+        
+        fname_temp = "temp.csv"
+        
+        with open(self.fname) as infile, open(fname_temp, "w") as outfile:
+            reader = csv.reader(infile)
+            header = next(reader)
+            writer = csv.DictWriter(outfile, header)
+            writer.writeheader()
                 
+            for start, delta, task in reader:
+                _now = datetime.now()
+                _start = datetime.strptime(start, self._pattern_time)
+                # delta
+                arr = [el.split("=") for el in delta.split("|")]
+                params = {key: int(val) for key, val in arr}
+                _delta = timedelta(**params)
+    
+                if _now - _start > _delta:
+                    self._window_task(text=task)
+                else: 
+                    writer.writerow({"start": start, "delta": delta, "task": task})
+                    
+        os.rename(fname_temp, self.fname)
+        # import pdb; pdb.set_trace()        
+        
         self.after(1000, self._check_tasks)            
     
     def _app_exit(self):
