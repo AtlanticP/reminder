@@ -3,14 +3,15 @@ import tkinter as tk
 from datetime import datetime, timedelta
 from itertools import takewhile
 import os
+import time
+import csv
 
 from main import App
 from task import TaskWindow
-import csv
 #%%
 
 
-@unittest.skip        
+# @unittest.skip        
 class TestTaskWindow(unittest.TestCase):
 
     def setUp(self):
@@ -99,10 +100,6 @@ class TestApp(unittest.TestCase):
     
     def setUp(self):
         self.root = App()
-        self.root._general_properties()
-        self.root._set_widgets()
-        self.root._current_time()
-        self.root._check_tasks()
         self.root.dooneevent()
         
     def tearDown(self):
@@ -149,8 +146,50 @@ class TestApp(unittest.TestCase):
         msg = "After saving the window task must be destroyed"
         self.assertNotIn(tk.Toplevel, childs, msg)
         self.remove_tail_csv(start)
-                 
+
+@unittest.skip
+class Test2App(unittest.TestCase):
     
+    def setUp(self):
+        
+        fname = "tasks.csv"
+        pattern_time = "%Y-%m-%d %H:%M:%S"
+        
+        with open(fname, "a") as file:
+            fieldnames = ["start", "delta", "task"]
+            writer = csv.DictWriter(file, fieldnames)
+            
+            start = datetime.now().strftime(pattern_time)
+            delta = "milliseconds=10|microseconds=5"
+            task = "Test in test_check_tasks"
+                        
+            writer.writerow({"start": start, "delta": delta, "task": task})                 
+        
+        self.root = App()
+        self.root.fname = "tasks.csv"
+        self.task = task
+        self.root.dooneevent()
+        
+    def tearDown(self):
+        self.root.destroy()
+        
+    def test_check_tasks(self):
+        is_proper_task = False
+        for el in self.root.winfo_children():
+            if isinstance(el, tk.Toplevel):
+                
+                for subel in el.winfo_children():
+                    if isinstance(subel, tk.Text):
+                        if subel.get(1.0, "end") == self.task + "\n":
+                            is_proper_task = True
+                            break
+                if is_proper_task:
+                    break
+
+        msg = "_check tasks does not raise tk.Toplevel or there not proper text"
+        self.assertTrue(is_proper_task, msg)        
+        
+            
 if __name__ == "__main__":
     unittest.main()
         
