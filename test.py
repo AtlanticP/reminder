@@ -3,41 +3,37 @@ import tkinter as tk
 from datetime import datetime, timedelta
 from itertools import takewhile
 import os
+import shutil
 import time
 import csv
 
 from main import App
 from task import TaskWindow
 #%%
-
+# @unittest.skip
+class TestGlobal(unittest.TestCase):
+    
+    def setUp(self):
+        '''Create new test base, the main base is renamed'''
+        
+        self.fname = "tasks.csv"
+        self.fname_temp = "task_test.csv"
+        shutil.copy(self.fname, self.fname_temp)
+        os.remove(self.fname)
+        
+    def tearDown(self):
+        '''recover main base'''
+        
+        os.rename(self.fname_temp, self.fname)
+        self.root.destroy()
 
 # @unittest.skip        
-class TestTaskWindow(unittest.TestCase):
+class TestTaskWindow(TestGlobal):
 
     def setUp(self):
+        super().setUp()
         self.root = TaskWindow()
         self.root._window_task()
-     
-    def tearDown(self):
-        self.root.destroy()
-    
-    @staticmethod    
-    def remove_tail_csv(start):
-        '''Remove last row when during testing function saves information to tasks.csv'''
-        
-        fname = "tasks.csv"
-        fname_temp = "temp.csv"       
-
-        with open(fname, "r") as infile, open(fname_temp, "w") as outfile:
-            reader = csv.reader(infile)
-            header = next(reader)
-            writer = csv.writer(outfile, header)
-            
-            writer.writerow(header)
-            writer.writerows(
-                takewhile(lambda x: x[0] != start, reader))
-
-            os.rename(fname_temp, fname)
         
     def test_window_task_exists(self):
         childs = (type(i) for i in self.root.winfo_children())
@@ -58,18 +54,22 @@ class TestTaskWindow(unittest.TestCase):
 
         self.assertEqual(expected, text_area.get(1.0, "end"), msg)
         
-    def test_save_button(self):
-        top_level = next(i for i in self.root.winfo_children() if isinstance(i, tk.Toplevel))
-        top_level_children = (type(i) for i in top_level.winfo_children())
-        msg = "tk.Toplevel object has no tk.Button"
-        self.assertIn(tk.Button, top_level_children, msg)
-        
+    def test_remind_buttons(self):
+        top_level = next(el for el in self.root.winfo_children() if isinstance(el, tk.Toplevel))
+        button_texts = (el["text"] for el in top_level.winfo_children() if isinstance(el, tk.Button))
+
+        for delta in ["15 min", "1.5 hour"]:
+            with self.subTest(i=delta):
+                msg = f"tk.Toplevel object has no button with {delta}"
+                self.assertIn(delta, button_texts, msg)
+            
     def test_save_note_to_csv(self):
         self.root._window_task()
-        self.root._save_note()
+        delta = "seconds=5"
+        self.root._save_note(delta)
         frmt = self.root._pattern_time
         start = datetime.now().strftime(frmt)        
-        delta = "seconds=5"
+        
         task = "Input your note\n"
         expected = (start, delta, task)
         
@@ -85,43 +85,20 @@ class TestTaskWindow(unittest.TestCase):
             for exp, hav in zip(expected, last):
                 with self.subTest(i=exp):
                     self.assertEqual(exp, hav)
-                    
-        self.remove_tail_csv(start)
         
     def test_save_note_destroy_window_task(self):
-        self.root._save_note()
-        start = datetime.now().strftime(self.root._pattern_time)
+        delta = "seconds=5"
+        self.root._save_note(delta)
         childs = (type(i) for i in self.root.winfo_children())
         msg = "After saving the window task mus be destroyed"
         self.assertNotIn(tk.Toplevel, childs, msg)
-        self.remove_tail_csv(start)
     
-class TestApp(unittest.TestCase):
+class TestApp(TestGlobal):
     
     def setUp(self):
+        super().setUp()
         self.root = App()
         self.root.dooneevent()
-        
-    def tearDown(self):
-        self.root.destroy()
-        
-    @staticmethod    
-    def remove_tail_csv(start):
-        '''Remove last row when during testing function saves information to tasks.csv'''
-        
-        fname = "tasks.csv"
-        fname_temp = "temp.csv"       
-    
-        with open(fname, "r") as infile, open(fname_temp, "w") as outfile:
-            reader = csv.reader(infile)
-            header = next(reader)
-            writer = csv.writer(outfile, header)
-            
-            writer.writerow(header)
-            writer.writerows(
-                takewhile(lambda x: x[0] != start, reader))
-    
-            os.rename(fname_temp, fname)        
     
     def test_button_task_exists(self):
         but_task = self.root.winfo_children()[-1] ##########
@@ -140,18 +117,17 @@ class TestApp(unittest.TestCase):
         
     def test_save_note_destroy_window_task(self):
         self.root._window_task()
-        start = datetime.now().strftime(self.root._pattern_time)
-        self.root._save_note()
+        delta = "seconds=5"
+        self.root._save_note(delta)
         childs = (type(i) for i in self.root.winfo_children())
         msg = "After saving the window task must be destroyed"
         self.assertNotIn(tk.Toplevel, childs, msg)
-        self.remove_tail_csv(start)
 
-@unittest.skip
-class Test2App(unittest.TestCase):
+# @unittest.skip
+class Test2App(TestGlobal):
     
     def setUp(self):
-        
+        super().setUp()
         fname = "tasks.csv"
         pattern_time = "%Y-%m-%d %H:%M:%S"
         
@@ -160,9 +136,10 @@ class Test2App(unittest.TestCase):
             writer = csv.DictWriter(file, fieldnames)
             
             start = datetime.now().strftime(pattern_time)
-            delta = "milliseconds=10|microseconds=5"
+            delta = "milliseconds=10"
             task = "Test in test_check_tasks"
-                        
+            
+            writer.writeheader()            
             writer.writerow({"start": start, "delta": delta, "task": task})                 
         
         self.root = App()
@@ -170,23 +147,24 @@ class Test2App(unittest.TestCase):
         self.task = task
         self.root.dooneevent()
         
-    def tearDown(self):
-        self.root.destroy()
-        
     def test_check_tasks(self):
+
         is_proper_task = False
+
         for el in self.root.winfo_children():
             if isinstance(el, tk.Toplevel):
                 
                 for subel in el.winfo_children():
                     if isinstance(subel, tk.Text):
+                        # print(subel.get(1.0, "end"))
                         if subel.get(1.0, "end") == self.task + "\n":
                             is_proper_task = True
                             break
+
                 if is_proper_task:
                     break
 
-        msg = "_check tasks does not raise tk.Toplevel or there not proper text"
+        msg = "_check_tasks does not raise tk.Toplevel or there not proper text"
         self.assertTrue(is_proper_task, msg)        
         
             
