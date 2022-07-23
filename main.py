@@ -17,7 +17,7 @@ class App(TaskWindow, tk.Tk):
         if not os.path.isfile(self.fname):
             with open(self.fname, "w") as file:
                 writer = csv.writer(file, lineterminator="\n")
-                writer.writerow(["start", "delta", "task"])
+                writer.writerow(["start", "task"])
                 
         self._general_properties()
         self._set_widgets()

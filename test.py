@@ -1,10 +1,13 @@
 import unittest
 import tkinter as tk
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import shutil
 import csv
+from tkcalendar import Calendar
+from tktimepicker import AnalogPicker
 
+from picker import DateTimeWindow
 from main import App
 from task import TaskWindow
 #%%
@@ -24,6 +27,27 @@ class TestGlobal(unittest.TestCase):
         
         os.rename(self.fname_temp, self.fname)
         self.root.destroy()
+
+@unittest.skip
+class TestDateTimeWindow(unittest.TestCase):
+    
+    def setUp(self):
+        self.root = DateTimeWindow()
+        
+    def tearDown(self):
+        self.root.destroy()
+        
+    def test_calendar_obj_exists(self):
+        obj_types = (type(el) for el in self.root.winfo_children())
+        self.assertIn(Calendar, obj_types)
+    
+    def test_time_obj_exists(self):
+        obj_types = (type(el) for el in self.root.winfo_children())
+        self.assertIn(AnalogPicker, obj_types)
+        
+    def test_button_exists(self):
+        obj_types = (type(el) for el in self.root.winfo_children())
+        self.assertIn(tk.Button, obj_types)
 
 # @unittest.skip        
 class TestTaskWindow(TestGlobal):
@@ -61,15 +85,17 @@ class TestTaskWindow(TestGlobal):
                 msg = f"tk.Toplevel object has no button with {delta}"
                 self.assertIn(delta, button_texts, msg)
             
-    def test_save_note_to_csv(self):
+    def test_save_task_to_csv(self):
         self.root._window_task()
-        delta = "seconds=5"
-        self.root._save_note(delta)
-        frmt = self.root._pattern_time
-        start = datetime.now().strftime(frmt)        
+        now = datetime.now()
+        params = {"seconds": 5}
+        delta = timedelta(**params)
+        start_str = (now + delta).strftime(self.root._pattern_time)
+
+        self.root._save_task(start_str)
         
         task = "Input your note\n"
-        expected = (start, delta, task)
+        expected = (start_str, task)
         
         fname = "tasks.csv"
         with open(fname, "r") as file:
@@ -84,12 +110,35 @@ class TestTaskWindow(TestGlobal):
                 with self.subTest(i=exp):
                     self.assertEqual(exp, hav)
         
-    def test_save_note_destroy_window_task(self):
-        delta = "seconds=5"
-        self.root._save_note(delta)
+    def test_save_task_destroy_window_task(self):
+        start = datetime.now().strftime(self.root._pattern_time)
+        self.root._save_task(start)
         childs = (type(i) for i in self.root.winfo_children())
         msg = "After saving the window task mus be destroyed"
         self.assertNotIn(tk.Toplevel, childs, msg)
+
+
+class TestDB(unittest.TestCase):
+        
+    def setUp(self):
+        self.fname = "tasks.csv"
+        self.root = App()
+                
+    def tearDown(self):
+        self.root.destroy()
+        
+    def test_DB_exists(self):
+        msg = 'App must create "tasks.csv"'
+        self.assertTrue(os.path.isfile(self.fname), msg)
+
+    def test_DB_contains(self):
+        msg = '"tasks.csv first row (header) must be "start,task"'
+        expected = "start,task\n"
+        
+        with open(self.fname, "r") as file:
+            text = file.read()
+            self.assertEqual(expected, text, msg)
+    
     
 class TestApp(TestGlobal):
     
@@ -98,12 +147,12 @@ class TestApp(TestGlobal):
         self.root = App()
         self.root.dooneevent()
     
-    def test_button_sched_exists(self):
+    def test_button_task_exists(self):
         but_task = self.root.winfo_children()[-1] ##########
         expected = tk.Button
         self.assertEqual(expected, type(but_task))
         
-    def test_button_sched_text(self):
+    def test_button_task_text(self):
         but_task = self.root.winfo_children()[-1]
         expected = "task"
         self.assertEqual(expected, but_task["text"])
@@ -113,10 +162,10 @@ class TestApp(TestGlobal):
         childs = (type(i) for i in self.root.winfo_children())
         self.assertIn(tk.Toplevel, childs)
         
-    def test_save_note_destroy_window_task(self):
+    def test_save_task_destroy_window_task(self):
         self.root._window_task()
         delta = "seconds=5"
-        self.root._save_note(delta)
+        self.root._save_task(delta)
         childs = (type(i) for i in self.root.winfo_children())
         msg = "After saving the window task must be destroyed"
         self.assertNotIn(tk.Toplevel, childs, msg)
