@@ -1,5 +1,6 @@
 import csv 
 from datetime import datetime 
+from dummy import DummyClass
 #%%
 
 class SaveTask:
@@ -20,24 +21,10 @@ class SaveTask:
         self.win_task.destroy()
 
 
-#%% These three classes were made only for test purposes
-
-class DummyGetTask:
-    
-    def get(self, *args, **kwargs) -> str:
-        return "text for dev purposes"
-    
-    def destroy(self, *args, **kwargs) -> None:
-        pass
-
-class DummyClass: 
-    
-    txt_task = DummyGetTask()
-    win_task = DummyGetTask()
-    
-class DummySaveTask(SaveTask, DummyGetTask, DummyClass): 
+class DummySaveTask(SaveTask, DummyClass): 
     pass
-        
+
+
 if __name__ == "__main__":
     
     pattern_time = '%Y-%m-%d %H:%M:%S'

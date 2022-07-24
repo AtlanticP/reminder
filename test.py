@@ -11,6 +11,7 @@ from picker import DateTimeWindow
 from main import App
 from task import TaskWindow
 from save_task import DummySaveTask
+from picker import DummyDateTimeWindow
 #%%
 # @unittest.skip
 class TestGlobal(unittest.TestCase):
@@ -35,6 +36,8 @@ class TestGlobal(unittest.TestCase):
         
         os.rename(self.fname_temp, self.fname)
 
+
+# @unittest.skip
 class TestSaveTask(TestGlobal):
     
     def setUp(self):
@@ -60,25 +63,33 @@ class TestSaveTask(TestGlobal):
                 with self.subTest(i=exp):
                     self.assertEqual(exp, real)
 
-@unittest.skip
+
+# @unittest.skip
 class TestDateTimeWindow(unittest.TestCase):
     
     def setUp(self):
-        self.root = DateTimeWindow()
+        self.root = tk.Tk()
+        self.win_dt = DummyDateTimeWindow()
+        self.win_dt.text = "text for dev purposes"
+        self.win_dt._win_task()
+        self.root.dooneevent()
         
     def tearDown(self):
         self.root.destroy()
         
     def test_calendar_obj_exists(self):
-        obj_types = (type(el) for el in self.root.winfo_children())
+        toplevel = next(el for el in self.root.winfo_children() if isinstance(el, tk.Toplevel)) 
+        obj_types = (type(el) for el in toplevel.winfo_children())
         self.assertIn(Calendar, obj_types)
     
     def test_time_obj_exists(self):
-        obj_types = (type(el) for el in self.root.winfo_children())
+        toplevel = next(el for el in self.root.winfo_children() if isinstance(el, tk.Toplevel)) 
+        obj_types = (type(el) for el in toplevel.winfo_children())
         self.assertIn(AnalogPicker, obj_types)
         
     def test_button_exists(self):
-        obj_types = (type(el) for el in self.root.winfo_children())
+        toplevel = next(el for el in self.root.winfo_children() if isinstance(el, tk.Toplevel)) 
+        obj_types = (type(el) for el in toplevel.winfo_children())
         self.assertIn(tk.Button, obj_types)
 
 @unittest.skip        
@@ -258,9 +269,4 @@ class Test2App(TestGlobal):
             
 if __name__ == "__main__":
     unittest.main()
-        
-        
-        
-        
-        
-        
+
