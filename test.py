@@ -10,23 +10,55 @@ from tktimepicker import AnalogPicker
 from picker import DateTimeWindow
 from main import App
 from task import TaskWindow
+from save_task import DummySaveTask
 #%%
 # @unittest.skip
 class TestGlobal(unittest.TestCase):
     
     def setUp(self):
         '''Create new test base, the main base is renamed'''
-        
+        # import pdb; pdb.set_trace()
         self.fname = "tasks.csv"
-        self.fname_temp = "task_test.csv"
-        shutil.copy(self.fname, self.fname_temp)
-        os.remove(self.fname)
         
+        if os.path.isfile(self.fname):
+
+            self.fname_temp = "task_test.csv"
+            shutil.copy(self.fname, self.fname_temp)
+            os.remove(self.fname)
+            
+        with open(self.fname, "w") as file:
+            writer = csv.writer(file, lineterminator="\n")
+            writer.writerow(["start", "task"])
+                
     def tearDown(self):
         '''recover main base'''
         
         os.rename(self.fname_temp, self.fname)
-        self.root.destroy()
+
+class TestSaveTask(TestGlobal):
+    
+    def setUp(self):
+        super().setUp()
+
+    def test_save_task(self):
+        pattern_time = '%Y-%m-%d %H:%M:%S'
+        start_str = datetime.now().strftime(pattern_time)
+        DummySaveTask()._save_task(start_str)
+        
+        task = "text for dev purposes"
+        expected = (start_str, task) 
+        
+        with open(self.fname, "r") as file:
+            
+            reader = csv.reader(file)
+            next(reader)    # header
+            
+            # to avoid create container            
+            for last in reader: pass
+            
+            for exp, real in zip(expected, last):
+                with self.subTest(i=exp):
+                    self.assertEqual(exp, real)
 
 @unittest.skip
 class TestDateTimeWindow(unittest.TestCase):
@@ -49,13 +81,16 @@ class TestDateTimeWindow(unittest.TestCase):
         obj_types = (type(el) for el in self.root.winfo_children())
         self.assertIn(tk.Button, obj_types)
 
-# @unittest.skip        
+@unittest.skip        
 class TestTaskWindow(TestGlobal):
 
     def setUp(self):
         super().setUp()
         self.root = TaskWindow()
         self.root._window_task()
+    
+    def tearDown(self):
+        self.root.destroy()
         
     def test_window_task_exists(self):
         childs = (type(i) for i in self.root.winfo_children())
@@ -117,7 +152,7 @@ class TestTaskWindow(TestGlobal):
         msg = "After saving the window task mus be destroyed"
         self.assertNotIn(tk.Toplevel, childs, msg)
 
-
+@unittest.skip
 class TestDB(unittest.TestCase):
         
     def setUp(self):
@@ -139,13 +174,16 @@ class TestDB(unittest.TestCase):
             text = file.read()
             self.assertEqual(expected, text, msg)
     
-    
+@unittest.skip    
 class TestApp(TestGlobal):
     
     def setUp(self):
         super().setUp()
         self.root = App()
         self.root.dooneevent()
+    
+    def tearDown(self):
+        self.root.destroy()
     
     def test_button_task_exists(self):
         but_task = self.root.winfo_children()[-1] ##########
@@ -164,13 +202,12 @@ class TestApp(TestGlobal):
         
     def test_save_task_destroy_window_task(self):
         self.root._window_task()
-        delta = "seconds=5"
-        self.root._save_task(delta)
+        self.root._save_task("")
         childs = (type(i) for i in self.root.winfo_children())
         msg = "After saving the window task must be destroyed"
         self.assertNotIn(tk.Toplevel, childs, msg)
 
-# @unittest.skip
+@unittest.skip
 class Test2App(TestGlobal):
     
     def setUp(self):
@@ -178,21 +215,25 @@ class Test2App(TestGlobal):
         fname = "tasks.csv"
         pattern_time = "%Y-%m-%d %H:%M:%S"
         
+        now = datetime.now()
+        delta = timedelta(milliseconds=10)
+        start_str = (now + delta).strftime(pattern_time)
+        task = "Test in test_check_tasks"        
+        
         with open(fname, "a") as file:
-            fieldnames = ["start", "delta", "task"]
+            fieldnames = ["start", "task"]
             writer = csv.DictWriter(file, fieldnames)
-            
-            start = datetime.now().strftime(pattern_time)
-            delta = "milliseconds=10"
-            task = "Test in test_check_tasks"
-            
+
             writer.writeheader()            
-            writer.writerow({"start": start, "delta": delta, "task": task})                 
+            writer.writerow({"start": start_str, "task": task})                 
         
         self.root = App()
         self.root.fname = "tasks.csv"
         self.task = task
         self.root.dooneevent()
+        
+    def tearDown(self):
+        self.root.destroy()
         
     def test_check_tasks(self):
 
