@@ -7,8 +7,8 @@ class DummyGetTask:
     def destroy(self, *args, **kwargs) -> None:
         pass
 
-class DummyClass: 
+class DummyClass(): 
     
-    txt_task = DummyGetTask()
-    win_task = DummyGetTask()
+    txt_task = DummyGetTask()   # type: DummyGetTask
+    win_task = DummyGetTask()   # type: DummyGetTask
 

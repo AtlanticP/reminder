@@ -1,3 +1,6 @@
 temp.py
 tasks.csv
+temp/
+test_temp.py
+__pycache__/
 
