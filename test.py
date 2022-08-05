@@ -10,8 +10,7 @@ from tktimepicker import AnalogPicker
 from picker import DateTimeWindow
 from main import App
 from task import TaskWindow
-from save_task import DummySaveTask
-from picker import DummyDateTimeWindow
+from save_task import SaveTask
 #%%
 # @unittest.skip
 class TestGlobal(unittest.TestCase):
@@ -45,10 +44,11 @@ class TestSaveTask(TestGlobal):
 
     def test_save_task(self):
         pattern_time = '%Y-%m-%d %H:%M:%S'
+        task =  f"text for dev purposes: {os.path.basename(__file__)}"
         start_str = datetime.now().strftime(pattern_time)
-        DummySaveTask()._save_task(start_str)
         
-        task = "text for dev purposes"
+        SaveTask()._save_task(start_str, task)
+        
         expected = (start_str, task) 
         
         with open(self.fname, "r") as file:
@@ -69,9 +69,9 @@ class TestDateTimeWindow(unittest.TestCase):
     
     def setUp(self):
         self.root = tk.Tk()
-        self.win_dt = DummyDateTimeWindow()
-        self.win_dt.text = "text for dev purposes"
-        self.win_dt._win_task()
+        self.win_dt = DateTimeWindow()
+        self.win_dt.task = "text for dev purposes"
+        self.win_dt._init_win_dt()
         self.root.dooneevent()
         
     def tearDown(self):
@@ -92,13 +92,14 @@ class TestDateTimeWindow(unittest.TestCase):
         obj_types = (type(el) for el in toplevel.winfo_children())
         self.assertIn(tk.Button, obj_types)
 
-@unittest.skip        
+# @unittest.skip        
 class TestTaskWindow(TestGlobal):
 
     def setUp(self):
         super().setUp()
-        self.root = TaskWindow()
-        self.root._window_task()
+        self.root = tk.Tk()
+        # self.root.win_task = 
+        TaskWindow()._init_win_task()
     
     def tearDown(self):
         self.root.destroy()
@@ -112,58 +113,20 @@ class TestTaskWindow(TestGlobal):
         top_level_children_types = (type(i) for i in top_level.winfo_children())
         msg = "tk.Toplevel object has no tk.Text for text area"
         self.assertIn(tk.Text, top_level_children_types, msg)
-    
-    def test_textarea_placeholder(self):
-        top_level = next(i for i in self.root.winfo_children() if isinstance(i, tk.Toplevel))
-        top_level_children = (i for i in top_level.winfo_children())
-        text_area = next(i for i in top_level_children if isinstance(i, tk.Text))
-        expected = "Input your note\n"
-        msg = 'tk.Text must contain a placeholder "Input your note\n"'
-
-        self.assertEqual(expected, text_area.get(1.0, "end"), msg)
-        
+            
     def test_remind_buttons(self):
         top_level = next(el for el in self.root.winfo_children() if isinstance(el, tk.Toplevel))
-        button_texts = (el["text"] for el in top_level.winfo_children() if isinstance(el, tk.Button))
+        frames = [el for el in top_level.winfo_children() if isinstance(el, tk.Frame)]
+        print(frames)
+        button_texts = [el["text"] for frame in frames for el in frame.winfo_children() if isinstance(el, tk.Button)]
 
-        for delta in ["15 min", "1.5 hour"]:
+        for delta in ["15 min", "1.5 hour", "random"]:
             with self.subTest(i=delta):
                 msg = f"tk.Toplevel object has no button with {delta}"
                 self.assertIn(delta, button_texts, msg)
-            
-    def test_save_task_to_csv(self):
-        self.root._window_task()
-        now = datetime.now()
-        params = {"seconds": 5}
-        delta = timedelta(**params)
-        start_str = (now + delta).strftime(self.root._pattern_time)
 
-        self.root._save_task(start_str)
-        
-        task = "Input your note\n"
-        expected = (start_str, task)
-        
-        fname = "tasks.csv"
-        with open(fname, "r") as file:
-                
-            reader = csv.reader(file)
-            last = next(reader)
 
-            # avoid to create container from generator
-            for last in reader: pass
-        
-            for exp, hav in zip(expected, last):
-                with self.subTest(i=exp):
-                    self.assertEqual(exp, hav)
-        
-    def test_save_task_destroy_window_task(self):
-        start = datetime.now().strftime(self.root._pattern_time)
-        self.root._save_task(start)
-        childs = (type(i) for i in self.root.winfo_children())
-        msg = "After saving the window task mus be destroyed"
-        self.assertNotIn(tk.Toplevel, childs, msg)
-
-@unittest.skip
+# @unittest.skip
 class TestDB(unittest.TestCase):
         
     def setUp(self):
