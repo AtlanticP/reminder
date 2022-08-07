@@ -28,10 +28,10 @@ class TaskWindow(DateTimeWindow):
         self.win_task = tk.Toplevel()
         self.win_task.title("Task")
         self.win_task.attributes("-topmost", 1)
-        self.win_task.geometry("400x400")
+        # self.win_task.geometry("400x400")
         
         font_txt = ("times", 13, "normal")
-        self.txt_task = tk.Text(self.win_task, bg="light yellow", font=font_txt, height=8)
+        self.txt_task = tk.Text(self.win_task, bg="light yellow", font=font_txt, height=10, width=8)
         
         if task:
             self.txt_task.insert("1.0", task)
@@ -41,24 +41,29 @@ class TaskWindow(DateTimeWindow):
         tk.Label(self.win_task, text="Remind me in").pack(fill=tk.X)
         
         frame1 = tk.Frame(self.win_task)
-        frame1.pack(fill="x")
+        frame1.pack(fill="both")
         frame2 = tk.Frame(self.win_task)
-        frame2.pack(fill="x")
+        frame2.pack(fill="both")
         
         func_5sec = partial(self._count_start_time, delta_str="seconds=5")
-        tk.Button(frame1, text="5 sec", command=func_5sec).pack(fill="x")
+        tk.Button(frame1, text="5 sec", command=func_5sec).pack(side="left", fill="x", expand=True)
 
         func_15min = partial(self._count_start_time, delta_str="minutes=15")
-        tk.Button(frame1, text="15 min", command=func_15min).pack(fill="x")
+        tk.Button(frame1, text="15 min", command=func_15min).pack(side="left", fill="x", expand=True)
         
         func_1hour = partial(self._count_start_time, delta_str="hours=1 minutes=30")
-        tk.Button(frame1, text="1.5 hour", command=func_1hour).pack(fill="x")        
+        tk.Button(frame1, text="1.5 hour", command=func_1hour).pack(side="left", fill="x", expand=True)        
+        
+        func_random = partial(self._count_start_time, delta_str="days=1")
+        tk.Button(frame1, text="1 day", command=func_random).pack(side="left", fill="x", expand=True)        
         
         func_random = partial(self._count_start_time, delta_str=rand_period())
-        tk.Button(frame2, text="random", command=func_random).pack(fill="x")        
-        # import pdb; pdb.set_trace()
-        # tk.Button(self.win_task, text="choose", command=self._get_win_datetime).pack(side=tk.LEFT)        
-    
+        tk.Button(frame2, text="random", command=func_random).pack(side="left", fill="x", expand=True)        
+        
+        tk.Button(frame2, text="choose", command=self._get_win_datetime).pack(side="left", fill="x", expand=True)
+        
+        tk.Button(frame2, text="end task", command=self._end_task).pack(side="left", fill="x", expand=True)
+        
     def _count_start_time(self, delta_str: str) -> None:
         params = {key: int(val) for key, val in map(lambda x: x.split("="), delta_str.split(" "))}
         delta = timedelta(**params)
@@ -67,7 +72,10 @@ class TaskWindow(DateTimeWindow):
         task = self.txt_task.get(1.0, "end")
         self._save_task(start, task)
         self.win_task.destroy()
-
+        
+    def _end_task(self) -> None:
+        self._is_extrem_exit = False
+        self.win_task.destroy()
         
 if __name__ == "__main__":
     
