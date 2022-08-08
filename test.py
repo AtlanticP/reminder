@@ -17,7 +17,7 @@ class TestGlobal(unittest.TestCase):
     
     def setUp(self):
         '''Create new test base, the main base is renamed'''
-        # import pdb; pdb.set_trace()
+
         self.fname = "tasks.csv"
         
         if os.path.isfile(self.fname):
@@ -71,7 +71,7 @@ class TestDateTimeWindow(unittest.TestCase):
         self.root = tk.Tk()
         self.win_dt = DateTimeWindow()
         self.win_dt.task = "text for dev purposes"
-        self.win_dt._init_win_dt()
+        self.win_dt._init_win_dt(self.win_dt.task)
         self.root.dooneevent()
         
     def tearDown(self):
@@ -92,14 +92,15 @@ class TestDateTimeWindow(unittest.TestCase):
         obj_types = (type(el) for el in toplevel.winfo_children())
         self.assertIn(tk.Button, obj_types)
 
+
 # @unittest.skip        
 class TestTaskWindow(TestGlobal):
 
     def setUp(self):
         super().setUp()
         self.root = tk.Tk()
-        # self.root.win_task = 
-        TaskWindow()._init_win_task()
+        self.win_task = TaskWindow()
+        self.win_task._init_win_task()
     
     def tearDown(self):
         self.root.destroy()
@@ -117,17 +118,15 @@ class TestTaskWindow(TestGlobal):
     def test_remind_buttons(self):
         top_level = next(el for el in self.root.winfo_children() if isinstance(el, tk.Toplevel))
         frames = [el for el in top_level.winfo_children() if isinstance(el, tk.Frame)]
-        print(frames)
         button_texts = [el["text"] for frame in frames for el in frame.winfo_children() if isinstance(el, tk.Button)]
 
-        for delta in ["15 min", "1.5 hour", "random"]:
+        for delta in ["15 min", "1.5 hour", "1 day", "random", "choose", "end task"]:
             with self.subTest(i=delta):
                 msg = f"tk.Toplevel object has no button with {delta}"
                 self.assertIn(delta, button_texts, msg)
-
-
+        
 # @unittest.skip
-class TestDB(unittest.TestCase):
+class TestDB(TestGlobal):
         
     def setUp(self):
         self.fname = "tasks.csv"
@@ -148,7 +147,7 @@ class TestDB(unittest.TestCase):
             text = file.read()
             self.assertEqual(expected, text, msg)
     
-@unittest.skip    
+# @unittest.skip    
 class TestApp(TestGlobal):
     
     def setUp(self):
@@ -160,7 +159,7 @@ class TestApp(TestGlobal):
         self.root.destroy()
     
     def test_button_task_exists(self):
-        but_task = self.root.winfo_children()[-1] ##########
+        but_task = self.root.winfo_children()[-1]
         expected = tk.Button
         self.assertEqual(expected, type(but_task))
         
@@ -175,14 +174,16 @@ class TestApp(TestGlobal):
         self.assertIn(tk.Toplevel, childs)
         
     def test_save_task_destroy_window_task(self):
-        self.root._window_task()
-        self.root._save_task("")
+        task_window = TaskWindow()
+        task_window._init_win_task()
+        task_window._end_task()
         childs = (type(i) for i in self.root.winfo_children())
         msg = "After saving the window task must be destroyed"
         self.assertNotIn(tk.Toplevel, childs, msg)
 
-@unittest.skip
+# @unittest.skip
 class Test2App(TestGlobal):
+    """Test check proper text of task in Task Window"""
     
     def setUp(self):
         super().setUp()
@@ -198,9 +199,8 @@ class Test2App(TestGlobal):
             fieldnames = ["start", "task"]
             writer = csv.DictWriter(file, fieldnames)
 
-            writer.writeheader()            
             writer.writerow({"start": start_str, "task": task})                 
-        
+
         self.root = App()
         self.root.fname = "tasks.csv"
         self.task = task
@@ -210,7 +210,7 @@ class Test2App(TestGlobal):
         self.root.destroy()
         
     def test_check_tasks(self):
-
+        
         is_proper_task = False
 
         for el in self.root.winfo_children():

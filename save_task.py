@@ -29,4 +29,3 @@ if __name__ == "__main__":
     
     file = "tasks.csv"
     assert os.path.isfile(file), "Save Task doesn't work"
-    

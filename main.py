@@ -9,9 +9,9 @@ import csv
 #%%
 class App(tk.Tk):
     
-    _pattern_time = "%Y-%m-%d %H:%M:%S"
+    _pattern_time = "%Y-%m-%d %H:%M:%S"  # type: str
     
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
                 
         self.fname = "tasks.csv" # file where tasks are stored
@@ -26,14 +26,14 @@ class App(tk.Tk):
         self._current_time()
         self._check_tasks()
         
-    def _general_properties(self):
+    def _general_properties(self) -> None:
         self.font = tk.font.nametofont("TkDefaultFont")
         self.font.config(size=12, family="Times", weight="bold")
         self.title("My Notes") 
         self.resizable(False, False)
         # self.attributes("-topmost", 1)        
         
-    def _set_widgets(self):
+    def _set_widgets(self) -> None:
         my_font = ("times", 52, "bold")
         self.label_time = tk.Label(self, font=my_font, bg="yellow")
         self.label_time.pack(side=tk.LEFT)
@@ -44,29 +44,30 @@ class App(tk.Tk):
         self.but_task = tk.Button(self, text="task", command=self._window_task)
         self.but_task.pack(side=tk.BOTTOM)
         
-    def _current_time(self):
+    def _current_time(self) -> None:
         time_string = time.strftime("%H:%M:%S %p")
         self.label_time.config(text=time_string)
         self.after(1000, self._current_time)
 
-    def _window_task(self):
-        TaskWindow()._init_window_task()
+    def _window_task(self) -> None:
+        TaskWindow()._init_win_task()
             
-    def _check_tasks(self):
-        
+    def _check_tasks(self) -> None:
+
         fname_temp = "temp.csv"
+        
         with open(self.fname) as infile, open(fname_temp, "w") as outfile:
             reader = csv.reader(infile)
             header = next(reader)
             writer = csv.DictWriter(outfile, header)
             writer.writeheader()
             
-            for start, task  in reader:
+            for start_str, task  in reader:
                 now = datetime.now()
-                start = datetime.strptime(start, self._pattern_time)
+                start = datetime.strptime(start_str, self._pattern_time)
     
                 if now > start:
-                    TaskWindow()._init_window_task(text=task)
+                    TaskWindow()._init_win_task(task=task)
                 else: 
                     start_str = start.strftime(self._pattern_time)
                     writer.writerow({"start": start_str, "task": task})
@@ -83,3 +84,4 @@ class App(tk.Tk):
 if __name__ == "__main__":        
     root = App()
     root.mainloop()
+

@@ -28,7 +28,6 @@ class TaskWindow(DateTimeWindow):
         self.win_task = tk.Toplevel()
         self.win_task.title("Task")
         self.win_task.attributes("-topmost", 1)
-        # self.win_task.geometry("400x400")
         
         font_txt = ("times", 13, "normal")
         self.txt_task = tk.Text(self.win_task, bg="light yellow", font=font_txt, height=10, width=8)
@@ -36,7 +35,7 @@ class TaskWindow(DateTimeWindow):
         if task:
             self.txt_task.insert("1.0", task)
             
-        self.txt_task.pack(fill=tk.X) #side=tk.LEFT, expand=True) # #expand=True,)
+        self.txt_task.pack(fill=tk.X)
         
         tk.Label(self.win_task, text="Remind me in").pack(fill=tk.X)
         
@@ -59,11 +58,11 @@ class TaskWindow(DateTimeWindow):
         
         func_random = partial(self._count_start_time, delta_str=rand_period())
         tk.Button(frame2, text="random", command=func_random).pack(side="left", fill="x", expand=True)        
-        
-        tk.Button(frame2, text="choose", command=self._get_win_datetime).pack(side="left", fill="x", expand=True)
+
+        tk.Button(frame2, text="choose", command=self._pass_to_win_dt).pack(side="left", fill="x", expand=True)
         
         tk.Button(frame2, text="end task", command=self._end_task).pack(side="left", fill="x", expand=True)
-        
+    
     def _count_start_time(self, delta_str: str) -> None:
         params = {key: int(val) for key, val in map(lambda x: x.split("="), delta_str.split(" "))}
         delta = timedelta(**params)
@@ -73,8 +72,12 @@ class TaskWindow(DateTimeWindow):
         self._save_task(start, task)
         self.win_task.destroy()
         
+    def _pass_to_win_dt(self):
+        task = self.txt_task.get(1.0, "end")
+        self._init_win_dt(task)
+        self.win_task.destroy()
+        
     def _end_task(self) -> None:
-        self._is_extrem_exit = False
         self.win_task.destroy()
         
 if __name__ == "__main__":
@@ -88,3 +91,4 @@ if __name__ == "__main__":
     root.font.config(size=14, family="Times", weight="bold")    # type: ignore
     TaskWindow()._init_win_task()
     root.mainloop()
+
