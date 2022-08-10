@@ -11,6 +11,7 @@ from picker import DateTimeWindow
 from main import App
 from task import TaskWindow
 from save_task import SaveTask
+from design import Button, Label
 #%%
 # @unittest.skip
 class TestGlobal(unittest.TestCase):
@@ -226,8 +227,56 @@ class Test2App(TestGlobal):
 
         msg = "_check_tasks does not raise tk.Toplevel or there not proper text"
         self.assertTrue(is_proper_task, msg)        
+
+
+# @unittest.skip        
+class TestButton(unittest.TestCase):
+    
+    def setUp(self): 
+        self.root = tk.Tk()
+        Button(self.root, text="test button").pack()
+        self.root.dooneevent()
         
+    def tearDown(self):
+        self.root.destroy()
             
+    def test_color_sheme(self):
+        button = self.root.winfo_children().pop()
+        
+        expected_vals = ("midnight blue", "lime","forest green","#38418A")
+        real_vals = (button["bg"], button["fg"], button["activeforeground"], button["activebackground"])
+        msg = "Improper color scheme"
+        
+        for exp, real in zip(expected_vals, real_vals):
+            
+            with self.subTest(i=exp):
+                self.assertEqual(exp, real, msg)
+
+
+# @unittest.skip
+class TestLabel(unittest.TestCase):
+    
+    def setUp(self): 
+        self.root = tk.Tk()
+        Label(self.root, text="test button").pack()
+        self.root.dooneevent()
+        
+    def tearDown(self):
+        self.root.destroy()
+            
+    def test_color_sheme(self):
+        label = self.root.winfo_children().pop()
+        
+        expected_vals = ("sky blue", "black")
+        real_vals = (label["bg"], label["fg"])
+        msg = "Improper color scheme of Label"
+        
+        for exp, real in zip(expected_vals, real_vals):
+            
+            with self.subTest(i=exp):
+                self.assertEqual(exp, real, msg)                
+
+           
 if __name__ == "__main__":
     unittest.main()
 
