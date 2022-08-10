@@ -9,8 +9,8 @@ from tktimepicker import AnalogPicker
 
 from picker import DateTimeWindow
 from main import App
-from task import TaskWindow
-from save_task import SaveTask
+from taskwindow import TaskWindow
+from savetask import SaveTask
 from design import Button, Label
 #%%
 # @unittest.skip
