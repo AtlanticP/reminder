@@ -243,7 +243,7 @@ class TestButton(unittest.TestCase):
     def test_color_sheme(self):
         button = self.root.winfo_children().pop()
         
-        expected_vals = ("midnight blue", "lime","forest green","#38418A")
+        expected_vals = ("navy", "lime","forest green","#38418A")
         real_vals = (button["bg"], button["fg"], button["activeforeground"], button["activebackground"])
         msg = "Improper color scheme"
         

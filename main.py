@@ -1,5 +1,5 @@
 import tkinter as tk
-import tkinter.font
+import tkinter.font    # type: ingore
 import sys
 from datetime import datetime
 import time
@@ -27,7 +27,7 @@ class App(tk.Tk):
         self._check_tasks()
         
     def _general_properties(self) -> None:
-        self.font = tk.font.nametofont("TkDefaultFont")
+        self.font = tkinter.font.nametofont("TkDefaultFont")
         self.font.config(size=12, family="Times", weight="bold")
         self.title("My Notes") 
         self.resizable(False, False)
@@ -84,4 +84,4 @@ class App(tk.Tk):
 if __name__ == "__main__":        
     root = App()
     root.mainloop()
-
+    

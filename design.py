@@ -1,16 +1,17 @@
 import tkinter as tk
-#%%
+
 class Colors:
     
     bg = "navy"
     fg = "lime"
     activebackground = "#38418A"
-    activeforeground="forest green"
+    activeforeground = "forest green"
 
 
 class Button(tk.Button, Colors):
     
     def __init__(self, *args, **kwargs) -> None:
+
         super().__init__(bg=self.bg, fg=self.fg,
                          activebackground=self.activebackground,
                          activeforeground=self.activeforeground,
