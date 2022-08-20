@@ -11,7 +11,7 @@ from picker import DateTimeWindow
 from main import App
 from task import TaskWindow
 from save_task import SaveTask
-from design import Button, Label
+from design import Button, Label, LabelFrame, Frame
 #%%
 # @unittest.skip
 class TestGlobal(unittest.TestCase):
@@ -39,9 +39,6 @@ class TestGlobal(unittest.TestCase):
 # @unittest.skip
 class TestSaveTask(TestGlobal):
     
-    def setUp(self):
-        super().setUp()
-
     def test_save_task(self):
         pattern_time = '%Y-%m-%d %H:%M:%S'
         task =  f"text for dev purposes: {os.path.basename(__file__)}"
@@ -243,7 +240,7 @@ class TestButton(unittest.TestCase):
     def test_color_sheme(self):
         button = self.root.winfo_children().pop()
         
-        expected_vals = ("midnight blue", "lime","forest green","#38418A")
+        expected_vals = ("navy", "lime","forest green","#38418A")
         real_vals = (button["bg"], button["fg"], button["activeforeground"], button["activebackground"])
         msg = "Improper color scheme"
         
@@ -276,7 +273,23 @@ class TestLabel(unittest.TestCase):
             with self.subTest(i=exp):
                 self.assertEqual(exp, real, msg)                
 
-           
+class TestFrame(unittest.TestCase):
+
+    def setUp(self): 
+        self.root = tk.Tk()
+        Frame().pack()
+        self.root.dooneevent()
+        
+    def tearDown(self):
+        self.root.destroy()
+ 
+    def test_color_scheme(self):
+        frame = self.root.winfo_children().pop()
+        bg = "#0E142F"
+        msg = f"incorrect background color: must be {bg}"
+        self.assertEqual(frame["bg"], bg, msg)
+
+
 if __name__ == "__main__":
     unittest.main()
 
