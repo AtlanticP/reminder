@@ -1,39 +1,29 @@
 import tkinter as tk
-
-class Colors:
-    
-    bg = "navy"
-    fg = "lime"
-    activebackground = "#38418A"
-    activeforeground = "forest green"
-
-
-class Button(tk.Button, Colors):
+class Button(tk.Button):
     
     def __init__(self, *args, **kwargs) -> None:
-
-        super().__init__(bg=self.bg, fg=self.fg,
-                         activebackground=self.activebackground,
-                         activeforeground=self.activeforeground,
+        super().__init__(bg="navy", fg="lime",
+                         activebackground="#38418A",
+                         activeforeground="forest green",
                          borderwidth=3, *args, **kwargs)
 
 
-class Label(tk.Label, Colors):
-    
-    bg = "sky blue"
-    fg = "black"
+class Label(tk.Label):
     
     def __init__(self, *args, **kwargs) -> None:
-        super().__init__(bg=self.bg, fg=self.fg, *args, **kwargs)
+        super().__init__(bg="sky blue", fg="black", *args, **kwargs)
 
 
 class LabelFrame(tk.LabelFrame):
     
-    bg = "midnight blue"
-    bd = 4
-    
     def __init__(self, *args, **kwargs) -> None:
-        super().__init__(bg=self.bg, bd=self.bd, *args, **kwargs)    
+        super().__init__(bg="midnight blue", bd=4, *args, **kwargs)    
+
+
+class Frame(tk.Frame):
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(bg="#0E142F", *args, **kwargs)
 
 
 if __name__ == "__main__":

@@ -11,8 +11,8 @@ from picker import DateTimeWindow
 from main import App
 from taskwindow import TaskWindow
 from savetask import SaveTask
-from design import Button, Label
-#%%
+from design import Button, Label, Frame
+
 # @unittest.skip
 class TestGlobal(unittest.TestCase):
     
@@ -39,9 +39,6 @@ class TestGlobal(unittest.TestCase):
 # @unittest.skip
 class TestSaveTask(TestGlobal):
     
-    def setUp(self):
-        super().setUp()
-
     def test_save_task(self):
         pattern_time = '%Y-%m-%d %H:%M:%S'
         task =  f"text for dev purposes: {os.path.basename(__file__)}"
@@ -276,7 +273,23 @@ class TestLabel(unittest.TestCase):
             with self.subTest(i=exp):
                 self.assertEqual(exp, real, msg)                
 
-           
+class TestFrame(unittest.TestCase):
+
+    def setUp(self): 
+        self.root = tk.Tk()
+        Frame().pack()
+        self.root.dooneevent()
+        
+    def tearDown(self):
+        self.root.destroy()
+ 
+    def test_color_scheme(self):
+        frame = self.root.winfo_children().pop()
+        bg = "#0E142F"
+        msg = f"incorrect background color: must be {bg}"
+        self.assertEqual(frame["bg"], bg, msg)
+
+
 if __name__ == "__main__":
     unittest.main()
 
