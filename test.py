@@ -1,3 +1,4 @@
+from tkinter.ttk import LabelFrame
 import unittest
 import tkinter as tk
 from datetime import datetime, timedelta
@@ -11,7 +12,7 @@ from picker import DateTimeWindow
 from main import App
 from taskwindow import TaskWindow
 from savetask import SaveTask
-from design import Button, Label, Frame
+from colors import COLORS
 
 # @unittest.skip
 class TestGlobal(unittest.TestCase):
@@ -227,44 +228,43 @@ class Test2App(TestGlobal):
 
 
 # @unittest.skip        
-class TestButton(unittest.TestCase):
+class TestColorDeepBlue(unittest.TestCase):
     
     def setUp(self): 
         self.root = tk.Tk()
-        Button(self.root, text="test button").pack()
+        scheme = COLORS["deep blue"]
+        tk.Button(self.root, text="test Button", **scheme["button"]).pack()
+        tk.Label(self.root, text="test Label", **scheme["label"]).pack()
+        tk.Label(self.root, text="test LabelTime", **scheme["label_time"])
         self.root.dooneevent()
         
     def tearDown(self):
         self.root.destroy()
             
-    def test_color_sheme(self):
-        button = self.root.winfo_children().pop()
+    def test_button_color(self):
+        childs = self.root.winfo_children()
+        button = next(but for but in childs if isinstance(but, tk.Button))
         
-        expected_vals = ("navy", "lime","forest green","#38418A")
+        expected_vals = ("#062656", "#4FC500","#4FC500","#38418A")
         real_vals = (button["bg"], button["fg"], button["activeforeground"], button["activebackground"])
-        msg = "Improper color scheme"
+        msg = "Improper color scheme of Button"
         
         for exp, real in zip(expected_vals, real_vals):
             
             with self.subTest(i=exp):
                 self.assertEqual(exp, real, msg)
 
+    def test_label_color(self):
 
-# @unittest.skip
-class TestLabel(unittest.TestCase):
-    
-    def setUp(self): 
-        self.root = tk.Tk()
-        Label(self.root, text="test button").pack()
-        self.root.dooneevent()
+        childs = self.root.winfo_children()
+        label = next(
+                el for el in childs if isinstance(
+                    el, tk.Label
+                    ) and el["text"] == "test Label"
+                )
+       
         
-    def tearDown(self):
-        self.root.destroy()
-            
-    def test_color_sheme(self):
-        label = self.root.winfo_children().pop()
-        
-        expected_vals = ("sky blue", "black")
+        expected_vals = ("#89EBEB", "#000000")
         real_vals = (label["bg"], label["fg"])
         msg = "Improper color scheme of Label"
         
@@ -273,22 +273,23 @@ class TestLabel(unittest.TestCase):
             with self.subTest(i=exp):
                 self.assertEqual(exp, real, msg)                
 
-class TestFrame(unittest.TestCase):
-
-    def setUp(self): 
-        self.root = tk.Tk()
-        Frame().pack()
-        self.root.dooneevent()
+    def test_label_time_color(self):
+        childs = self.root.winfo_children()
+        label = next(
+                el for el in childs if isinstance(
+                    el, tk.Label
+                    ) and el["text"] == "test Label"
+                )
         
-    def tearDown(self):
-        self.root.destroy()
- 
-    def test_color_scheme(self):
-        frame = self.root.winfo_children().pop()
-        bg = "#0E142F"
-        msg = f"incorrect background color: must be {bg}"
-        self.assertEqual(frame["bg"], bg, msg)
-
+        expected_vals = ("#89EBEB", "#000000")
+        real_vals = (label["bg"], label["fg"])
+        msg = "Improper color scheme of LabelTime"
+        
+        for exp, real in zip(expected_vals, real_vals):
+            
+            with self.subTest(i=exp):
+                self.assertEqual(exp, real, msg)                
+            
 
 if __name__ == "__main__":
     unittest.main()

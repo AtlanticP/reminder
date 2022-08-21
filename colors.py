@@ -1,4 +1,6 @@
-COLORS: dict[str, dict[str, dict[str, str]]] = {
+from hinting import Accepted_schemes
+
+COLORS: Accepted_schemes = {
         "deep blue": {
             "main": {
                 "bg": "#011127",
@@ -10,12 +12,12 @@ COLORS: dict[str, dict[str, dict[str, str]]] = {
             "button": {
                 "bg": "#062656",
                 "fg": "#4FC500",
+                "activebackground": "#38418A",
+                "activeforeground": "#4FC500"
                 },
             "label": {
                 "bg": "#89EBEB",
                 "fg": "#000000",
-                "activebackground": "#38418A",
-                "activeforeground": "#4FC500"
                 }
         }
 }
