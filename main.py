@@ -1,12 +1,15 @@
+from typing import Literal, Union, Dict
 import tkinter as tk
-import tkinter.font
+import tkinter.font    # type: ingore
 import sys
-from datetime import datetime
 import time
-from taskwindow import TaskWindow
 import os
 import csv
-#%%
+from datetime import datetime
+from taskwindow import TaskWindow
+from colors import COLORS
+from hinting import Schemes
+
 class App(tk.Tk):
     
     _pattern_time = "%Y-%m-%d %H:%M:%S"  # type: str
@@ -14,7 +17,7 @@ class App(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
                 
-        self.fname = "tasks.csv" # file where tasks are stored
+        self.fname: str = "tasks.csv" # file where tasks are stored
 
         if not os.path.isfile(self.fname):
             with open(self.fname, "w") as file:
@@ -23,18 +26,18 @@ class App(tk.Tk):
                 
         self._general_properties()
         self._set_widgets()
+        self._set_colorscheme("deep blue")
         self._current_time()
         self._check_tasks()
-        
+
     def _general_properties(self) -> None:
-        self.font = tk.font.nametofont("TkDefaultFont")
+        self.font = tkinter.font.nametofont("TkDefaultFont")
         self.font.config(size=12, family="Times", weight="bold")
         self.title("My Notes") 
         self.resizable(False, False)
-        # self.attributes("-topmost", 1)        
         
     def _set_widgets(self) -> None:
-        my_font = ("times", 52, "bold")
+        my_font = ("times", 24)
         self.label_time = tk.Label(self, font=my_font, bg="yellow")
         self.label_time.pack(side=tk.LEFT)
         
@@ -42,7 +45,18 @@ class App(tk.Tk):
         self.but_exit.pack(side=tk.LEFT)
         
         self.but_task = tk.Button(self, text="task", command=self._window_task)
-        self.but_task.pack(side=tk.BOTTOM)
+        self.but_task.pack(side=tk.LEFT)
+        
+    def _set_colorscheme(self, s: Schemes):
+        schema  = COLORS[s]
+        self.configure(**schema["main"]) 
+        self.label_time.configure(**schema["label_time"])
+        
+        buttons = (el for el in self.winfo_children() if isinstance(el, tk.Button))
+        
+        for button in buttons:
+            button.configure(**schema["button"])
+
         
     def _current_time(self) -> None:
         time_string = time.strftime("%H:%M:%S %p")
@@ -84,4 +98,4 @@ class App(tk.Tk):
 if __name__ == "__main__":        
     root = App()
     root.mainloop()
-
+    

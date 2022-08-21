@@ -1,7 +1,7 @@
 import csv 
 from datetime import datetime 
 #%%
-class SaveTask():
+class SaveTask:
     
     def _save_task(self, start_str: str, task: str) -> None:
         
@@ -14,7 +14,7 @@ class SaveTask():
                 "task": task
                 }
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            writer.writerow(dct)
+            writer.writerow(dct)    # type: ignore
 
 
 if __name__ == "__main__":
