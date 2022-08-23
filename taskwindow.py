@@ -7,12 +7,16 @@ from typing import Optional
 import random
 
 from picker import DateTimeWindow 
-#%%
+
 class TaskWindow(DateTimeWindow):
     
     _pattern_time = "%Y-%m-%d %H:%M:%S"
-    
-    def _init_win_task(self, task: Optional[str]=None) -> None:
+
+    def __init__(self, task: Optional[str]=None) -> None:
+        self._task = task
+        self._init_win_task()
+
+    def _init_win_task(self) -> None:
         
         def rand_period() -> str:
             """"return random period for the reminder"""
@@ -28,13 +32,13 @@ class TaskWindow(DateTimeWindow):
         self.win_task.title("Task")
         self.win_task.attributes("-topmost", 1)
         
-        font_txt = ("times", 13, "normal")
-        self.txt_task = tk.Text(self.win_task, bg="light yellow", font=font_txt, height=10, width=8)
+        font_text = ("times", 13, "normal")
+        self.text_task = tk.Text(self.win_task, bg="light yellow", font=font_text, height=10, width=8)
         
-        if task:
-            self.txt_task.insert("1.0", task)
+        if self._task:
+            self.text_task.insert("1.0", self._task)
             
-        self.txt_task.pack(fill=tk.X)
+        self.text_task.pack(fill=tk.X)
         
         tk.Label(self.win_task, text="Remind me in").pack(fill=tk.X)
         

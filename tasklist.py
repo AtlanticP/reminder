@@ -7,8 +7,9 @@ import os
 
 from colors import COLORS
 from hinting import Schemes, Accepted_structures
+from taskwindow import TaskWindow
 
-class ListTask(tk.Toplevel):
+class TaskList(tk.Toplevel):
 
     def __init__(self, fname: str, scheme: Schemes, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -17,13 +18,8 @@ class ListTask(tk.Toplevel):
         self.attributes("-topmost", 1)
         self.fname = fname      # File name
         self.tasks = []
-        # import pdb; pdb.set_trace()
         self.scheme = COLORS[scheme]    # type: Accepted_structures
-        # self.label_tasks = {}
-        # self.label_time = {}
-        # self.buttons = []
         self._set_widgets()
-        # self._set_colorscheme(scheme)
 
     def _set_widgets(self) -> None:
         self._set_tasks()
@@ -36,18 +32,13 @@ class ListTask(tk.Toplevel):
         with open(self.fname) as csvfile:
             reader = csv.DictReader(csvfile)
 
-            for i, line in enumerate(reader):
-
-                self.tasks.append(line)    # why? 
+            for line in reader:
                 time = line["start"][11:-3]
+                task = line["task"]
 
-                # The code below returns text of lentgh equals to 23.
-                s = line["task"]    
-                task = (s[:20] + "...") if len(s) > 23 else s + " "*(23 - len(s))
+                self._set_task(task=task, time=time)
 
-                self._set_task(i=i, task=task, time=time)
-
-    def _set_task(self, i, task: str, time: str) -> None:
+    def _set_task(self, task: str, time: str) -> None:
         frame = tk.Frame(self, **self.scheme["frame"])
         frame.pack()
 
@@ -55,6 +46,7 @@ class ListTask(tk.Toplevel):
         entry_task.insert(0, task)
         entry_task.configure(**self.scheme["entry_task"])
         entry_task.pack(side="left")
+        entry_task.bind("<Button-1>", lambda e: TaskWindow(task))
         
         label_time = tk.Label(frame, text=time)
         label_time.configure(**self.scheme["label_time"])
@@ -84,7 +76,7 @@ class FileManager:
     def __enter__(self):
         pattern_time = '%Y-%m-%d %H:%M:%S'
         start_str = datetime.now().strftime(pattern_time)
-        tasks: list[str] = []
+        # tasks: list[str] = []
         
         with open(self.fname, "w") as csvfile:
             fieldnames = ("start", "task")
@@ -111,7 +103,7 @@ if __name__ == "__main__":
     with FileManager(fname):
 
         root = tk.Tk()
-        ListTask(fname, "deep blue")
+        TaskList(fname, "deep blue")
         root.mainloop()
 
 
