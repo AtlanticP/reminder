@@ -15,9 +15,13 @@ COLORS: Accepted_schemes = {
                 "activebackground": "#38418A",
                 "activeforeground": "#4FC500"
                 },
-            "label": {
+            "entry_task": {
                 "bg": "#89EBEB",
                 "fg": "#000000",
+                },
+            "frame": {
+                "borderwidth": 2,
+                "relief": "ridge"
                 }
         }
 }

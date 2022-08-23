@@ -24,6 +24,7 @@ class App(tk.Tk):
                 writer = csv.writer(file, lineterminator="\n")
                 writer.writerow(["start", "task"])
                 
+        self.buttons = []
         self._general_properties()
         self._set_widgets()
         self._set_colorscheme("deep blue")
@@ -41,21 +42,23 @@ class App(tk.Tk):
         self.label_time = tk.Label(self, font=my_font, bg="yellow")
         self.label_time.pack(side=tk.LEFT)
         
-        self.but_exit = tk.Button(self, text="exit", command=self._app_exit)
-        self.but_exit.pack(side=tk.LEFT)
+        but_exit = tk.Button(self, text="exit", command=self._app_exit)
+        but_exit.pack(side=tk.LEFT)
+        self.buttons.append(but_exit)
         
-        self.but_task = tk.Button(self, text="task", command=self._window_task)
-        self.but_task.pack(side=tk.LEFT)
+        but_task = tk.Button(self, text="task", command=self._window_task)
+        but_task.pack(side=tk.LEFT)
+        self.buttons.append(but_task)
         
     def _set_colorscheme(self, s: Schemes):
-        schema  = COLORS[s]
-        self.configure(**schema["main"]) 
-        self.label_time.configure(**schema["label_time"])
+        scheme  = COLORS[s]
+        self.configure(**scheme["main"]) 
+        self.label_time.configure(**scheme["label_time"])
         
         buttons = (el for el in self.winfo_children() if isinstance(el, tk.Button))
         
         for button in buttons:
-            button.configure(**schema["button"])
+            button.configure(**scheme["button"])
 
         
     def _current_time(self) -> None:

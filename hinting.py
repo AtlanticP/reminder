@@ -1,4 +1,4 @@
-from typing import Literal, Union
+from typing import Literal, Union, Any
 
 Deep_blue = Literal["deep blue"]
 Light = Literal["light"]
@@ -8,14 +8,20 @@ Schemes = Union[Deep_blue, Light, Brown]
 Main = Literal["main"]
 Label_time = Literal["label_time"]
 Button = Literal["button"]
-Label = Literal["label"]
-Structure = Union[Main, Label_time, Button, Label]
+Entry_task = Literal["entry_task"]
+Frame_task = Literal["frame"]
+Structure = Union[Main, Label_time, Button, Entry_task, Frame_task]
 
 Bg = Literal["bg"]
 Fg = Literal["fg"]
 ActBg = Literal["activebackground"]
 ActFg = Literal["activeforeground"]
-Params = Union[Bg, Fg, ActBg, ActFg]
+Border = Literal["borderwidth"]
+Relief = Literal["relief"]
+Params = Union[Bg, Fg, ActBg, ActFg, Border, Relief]
 
-Accepted_schemes = dict[Schemes, dict[Structure, dict[Params, str]]]
+Accepted_structures = dict[Structure, dict[Params, str|int]]
+# Accepted_schemes = dict[Schemes, dict[Structure, dict[Params, str|int]]]
+Accepted_schemes = dict[Schemes, Accepted_structures]
+
 
