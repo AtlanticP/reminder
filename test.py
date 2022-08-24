@@ -13,6 +13,9 @@ from main import App
 from taskwindow import TaskWindow
 from savetask import SaveTask
 from colors import COLORS
+from tasklist import TaskList
+
+import typing as tp
 
 # @unittest.skip
 class TestGlobal(unittest.TestCase):
@@ -45,7 +48,7 @@ class TestSaveTask(TestGlobal):
         task =  f"text for dev purposes: {os.path.basename(__file__)}"
         start_str = datetime.now().strftime(pattern_time)
         
-        SaveTask()._save_task(start_str, task)
+        SaveTask._save_task(start_str, task)
         
         expected = (start_str, task) 
         
@@ -98,7 +101,6 @@ class TestTaskWindow(TestGlobal):
         super().setUp()
         self.root = tk.Tk()
         self.win_task = TaskWindow()
-        self.win_task._init_win_task()
     
     def tearDown(self):
         self.root.destroy()
@@ -110,7 +112,7 @@ class TestTaskWindow(TestGlobal):
     def test_textarea_exists(self):
         top_level = next(i for i in self.root.winfo_children() if isinstance(i, tk.Toplevel))
         top_level_children_types = (type(i) for i in top_level.winfo_children())
-        msg = "tk.Toplevel object has no tk.Text for text area"
+        msg = "Toplevel object has no Text object for text area"
         self.assertIn(tk.Text, top_level_children_types, msg)
             
     def test_remind_buttons(self):
@@ -123,6 +125,138 @@ class TestTaskWindow(TestGlobal):
                 msg = f"tk.Toplevel object has no button with {delta}"
                 self.assertIn(delta, button_texts, msg)
         
+class TestTaskList(TestGlobal):
+
+    def setUp(self):
+        super().setUp()
+
+        pattern_time = '%Y-%m-%d %H:%M:%S'
+        
+        for i, delta in enumerate((0, 0, 1)):
+            task =  f"text {delta}"
+            start = datetime.now() + timedelta(days=delta)
+            SaveTask._save_task(start.strftime(pattern_time), task)
+        
+        fname = "tasks.csv"
+        scheme = "deep blue"
+        self.task_list = TaskList(fname, scheme)
+
+    def tearDown(self):
+        self.task_list.destroy()
+        
+    def test_task_list_exists(self):
+        self.assertIsInstance(self.task_list, tk.Toplevel)
+        
+    def test_nubmer_buttons(self):
+        buttons = [i for i in self.task_list.winfo_children() if isinstance(i, tk.Button)]
+        msg = "There wrong number of buttons on TaskList obj"
+        self.assertEqual(1, len(buttons), msg)
+
+    def test_suited_buttons_exists(self):
+        buttons = (i for i in self.task_list.winfo_children() if isinstance(i, tk.Button))
+        expected = ("OK",)
+
+        for exp, real in zip(expected, buttons):
+            with self.subTest(i=exp):
+                self.assertEqual(exp, real["text"])
+
+    def test_tasks_exists(self):
+        childs: tp.List[tk.Widget] = self.task_list.winfo_children()
+        frames = [el.winfo_children()[0] for el in childs if isinstance(el, tk.Frame)]
+        
+        expected: int = 2
+        msg: str = f"Wrong number of Frames objs (tasks), expected {expected}"
+        existed: int = len(frames)
+
+        self.assertEqual(expected, existed, msg)
+
+    def test_entries_exists(self):
+        childs: tp.List[tk.Widget] = self.task_list.winfo_children()
+        entries = [el.winfo_children()[1] for el in childs if isinstance(el, tk.Frame)]
+        
+        expected: int = 2
+        msg: str = f"Wrong number of Entry objs, expected {expected}"
+        existed: int = len(entries)
+
+        self.assertEqual(expected, existed, msg)
+            
+    def test_entries_content(self):
+        """check TaskList chooses today's entries"""
+
+        childs: tp.List[tk.Widget] = self.task_list.winfo_children()
+        entries = (el.winfo_children()[0] for el in childs if isinstance(el, tk.Frame))
+        existed_texts = (entry.get() for entry in entries)    # type: ignore
+
+        task: str = "text 0"
+        start_str: str = datetime.now().strftime("%H:%M")
+        expected_texts: tp.Tuple[str, ...] = (task,)*2 
+
+        for exp, real in zip(expected_texts, existed_texts):
+            with self.subTest(i=exp):
+                self.assertEqual(exp, real)
+
+    def test_entry_bg_colorscheme(self):
+        childs: tp.List[tk.Widget] = self.task_list.winfo_children()
+        entries = (el.winfo_children()[0] for el in childs if isinstance(el, tk.Frame))
+        existed_colors = (entry["bg"] for entry in entries)
+
+        expected_color = "#89EBEB"
+
+        for color in existed_colors:
+
+            with self.subTest(i=color):
+                self.assertEqual(expected_color, color)
+
+    def test_entry_fg_colorscheme(self):
+
+        childs: tp.List[tk.Widget] = self.task_list.winfo_children()
+        entries = (el.winfo_children()[0] for el in childs if isinstance(el, tk.Frame))
+        existed = (entry["fg"] for entry in entries)
+
+        expected = "#000000"
+
+        for color in existed:
+
+            with self.subTest(i=color):
+                self.assertEqual(expected, color)
+            
+    def test_labels_exists(self):
+        childs: tp.List[tk.Widget] = self.task_list.winfo_children()
+        labels = [el.winfo_children()[1] for el in childs if isinstance(el, tk.Frame)]
+        
+        expected: int = 2
+        msg: str = f"Wrong number of Entry objs, expected {expected}"
+        existed: int = len(labels)
+
+        self.assertEqual(expected, existed, msg)
+            
+    def test_labels_content(self):
+        """check TaskList chooses today's labels (label_times)"""
+
+        childs: tp.List[tk.Widget] = self.task_list.winfo_children()
+        labels = (el.winfo_children()[1] for el in childs if isinstance(el, tk.Frame))
+        existed: tp.Generator = (label["text"] for label in labels)    # type: ignore
+
+        start_str: str = datetime.now().strftime("%H:%M")
+        expected: tp.Tuple[str, ...] = (start_str,)*2 
+
+        for exp, real in zip(expected, existed):
+            with self.subTest(i=exp):
+                self.assertEqual(exp, real)
+
+    def test_label_bg_colorscheme(self):
+        childs: tp.List[tk.Widget] = self.task_list.winfo_children()
+        labels = (el.winfo_children()[1] for el in childs if isinstance(el, tk.Frame))
+        existed_colors = (entry["bg"] for entry in labels)
+
+        expected_color = "#062656"
+
+        for color in existed_colors:
+
+            with self.subTest(i=color):
+                self.assertEqual(expected_color, color)
+
+
 # @unittest.skip
 class TestDB(TestGlobal):
         
@@ -144,7 +278,9 @@ class TestDB(TestGlobal):
         with open(self.fname, "r") as file:
             text = file.read()
             self.assertEqual(expected, text, msg)
-    
+
+
+        
 # @unittest.skip    
 class TestApp(TestGlobal):
     

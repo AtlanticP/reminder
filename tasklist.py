@@ -11,9 +11,9 @@ from taskwindow import TaskWindow
 
 class TaskList(tk.Toplevel):
 
-    def __init__(self, fname: str, scheme: Schemes, *args, **kwargs) -> None:
+    def __init__(self, fname: str, scheme: Schemes="deep blue", *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        self.geometry="400x400"
+        # self.geometry="400x400"
         self.resizable(False, False)
         self.attributes("-topmost", 1)
         self.fname = fname      # File name
@@ -28,15 +28,20 @@ class TaskList(tk.Toplevel):
         but_ok.pack(fill="x")
 
     def _set_tasks(self) -> None:
+        today = datetime.now().date()
 
         with open(self.fname) as csvfile:
             reader = csv.DictReader(csvfile)
 
             for line in reader:
-                time = line["start"][11:-3]
-                task = line["task"]
 
-                self._set_task(task=task, time=time)
+                pattern_time = '%Y-%m-%d %H:%M:%S'
+                date = datetime.strptime(line["start"], pattern_time).date()
+
+                if date == today:
+                    time = line["start"][11:-3]
+                    task = line["task"]
+                    self._set_task(task=task, time=time)
 
     def _set_task(self, task: str, time: str) -> None:
         frame = tk.Frame(self, **self.scheme["frame"])
@@ -46,7 +51,8 @@ class TaskList(tk.Toplevel):
         entry_task.insert(0, task)
         entry_task.configure(**self.scheme["entry_task"])
         entry_task.pack(side="left")
-        entry_task.bind("<Button-1>", lambda e: TaskWindow(task))
+
+        entry_task.bind("<Button-1>", lambda e: TaskWindow(e.widget.get()))
         
         label_time = tk.Label(frame, text=time)
         label_time.configure(**self.scheme["label_time"])
@@ -57,7 +63,7 @@ class TaskList(tk.Toplevel):
      
 
 def get_task()-> str:
-    '''get random task: random text'''
+    """get random task: random text"""
     
     s = string.ascii_lowercase + string.digits
     n_letters = lambda: random.randint(1, 10)
@@ -76,7 +82,6 @@ class FileManager:
     def __enter__(self):
         pattern_time = '%Y-%m-%d %H:%M:%S'
         start_str = datetime.now().strftime(pattern_time)
-        # tasks: list[str] = []
         
         with open(self.fname, "w") as csvfile:
             fieldnames = ("start", "task")

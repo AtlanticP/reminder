@@ -2,9 +2,9 @@ import csv
 from datetime import datetime 
 #%%
 class SaveTask:
-    
-    def _save_task(self, start_str: str, task: str) -> None:
-        
+
+    @staticmethod
+    def _save_task(start_str: str, task: str) -> None:
         
         with open("tasks.csv", "a", newline='') as csvfile:
             fieldnames = ("start", "task")
@@ -24,7 +24,7 @@ if __name__ == "__main__":
     pattern_time = '%Y-%m-%d %H:%M:%S'
     start_str = datetime.now().strftime(pattern_time)
     task = f"text for dev purposes: {os.path.basename(__file__)}"
-    SaveTask()._save_task(start_str, task)
+    SaveTask._save_task(start_str, task)
     
     
     file = "tasks.csv"
