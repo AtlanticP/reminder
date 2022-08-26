@@ -100,21 +100,37 @@ class TestTaskWindow(TestGlobal):
     def setUp(self):
         super().setUp()
         self.root = tk.Tk()
-        self.win_task = TaskWindow()
-    
+        self.task = "text for test purpose"
+        scheme = "deep blue"
+        TaskWindow(self.task, scheme)    
+
     def tearDown(self):
         self.root.destroy()
         
     def test_window_task_exists(self):
-        childs = (type(i) for i in self.root.winfo_children())
-        self.assertIn(tk.Toplevel, childs)
+        obj = self.root.winfo_children()[0]
+        self.assertIsInstance(obj, tk.Toplevel)
         
     def test_textarea_exists(self):
-        top_level = next(i for i in self.root.winfo_children() if isinstance(i, tk.Toplevel))
-        top_level_children_types = (type(i) for i in top_level.winfo_children())
-        msg = "Toplevel object has no Text object for text area"
-        self.assertIn(tk.Text, top_level_children_types, msg)
+        toplevel = self.root.winfo_children()[0]
+        textarea = toplevel.winfo_children()[0]
+        msg = "Toplevel object has no Text object"
+        self.assertIsInstance(textarea, tk.Text, msg)
             
+    def test_task_text(self):
+        toplevel = self.root.winfo_children()[0]
+        textarea = toplevel.winfo_children()[0]
+        task = textarea.get(1.0, "end")     # type: ignore
+        expected = self.task + "\n"
+        self.assertEqual(expected, task)
+
+    def test_textarea_colorscheme(self):
+        toplevel = self.root.winfo_children()[0]
+        textarea = toplevel.winfo_children()[0]
+        bg = textarea["bg"]
+        expected = "#89EBEB"
+        self.assertEqual(expected, bg)
+
     def test_remind_buttons(self):
         top_level = next(el for el in self.root.winfo_children() if isinstance(el, tk.Toplevel))
         frames = [el for el in top_level.winfo_children() if isinstance(el, tk.Frame)]
@@ -124,6 +140,7 @@ class TestTaskWindow(TestGlobal):
             with self.subTest(i=delta):
                 msg = f"tk.Toplevel object has no button with {delta}"
                 self.assertIn(delta, button_texts, msg)
+
         
 class TestTaskList(TestGlobal):
 
@@ -307,13 +324,15 @@ class TestApp(TestGlobal):
         childs = (type(i) for i in self.root.winfo_children())
         self.assertIn(tk.Toplevel, childs)
         
-    def test_save_task_destroy_window_task(self):
-        task_window = TaskWindow()
-        task_window._init_win_task()
-        task_window._end_task()
-        childs = (type(i) for i in self.root.winfo_children())
-        msg = "After saving the window task must be destroyed"
-        self.assertNotIn(tk.Toplevel, childs, msg)
+    # def test_save_task_destroy_window_task(self):
+    #     task_window = TaskWindow()
+    #     task_window._init_win_task()
+    #     task_window._end_task()
+    #     childs = (type(i) for i in self.root.winfo_children())
+    #     msg = "After saving the window task must be destroyed"
+    #
+    #     import pdb; pdb.set_trace()
+    #     self.assertNotIn(tk.Toplevel, childs, msg)
 
 # @unittest.skip
 class Test2App(TestGlobal):
@@ -369,8 +388,13 @@ class TestColorDeepBlue(unittest.TestCase):
     def setUp(self): 
         self.root = tk.Tk()
         scheme = COLORS["deep blue"]
+
         tk.Button(self.root, text="test Button", **scheme["button"]).pack()
-        tk.Label(self.root, text="test Label", **scheme["label"]).pack()
+
+        entry_task = tk.Entry(self.root, **scheme["entry_task"])
+        entry_task.insert(0, "test Entry")
+        entry_task.pack()
+
         tk.Label(self.root, text="test LabelTime", **scheme["label_time"])
         self.root.dooneevent()
         
@@ -378,11 +402,11 @@ class TestColorDeepBlue(unittest.TestCase):
         self.root.destroy()
             
     def test_button_color(self):
-        childs = self.root.winfo_children()
-        button = next(but for but in childs if isinstance(but, tk.Button))
+        childs: list[tk.Widget] = self.root.winfo_children()
+        button: tk.Button = next(but for but in childs if isinstance(but, tk.Button))
         
         expected_vals = ("#062656", "#4FC500","#4FC500","#38418A")
-        real_vals = (button["bg"], button["fg"], button["activeforeground"], button["activebackground"])
+        real_vals: tp.Iterable[str] = (button["bg"], button["fg"], button["activeforeground"], button["activebackground"])
         msg = "Improper color scheme of Button"
         
         for exp, real in zip(expected_vals, real_vals):
@@ -390,19 +414,15 @@ class TestColorDeepBlue(unittest.TestCase):
             with self.subTest(i=exp):
                 self.assertEqual(exp, real, msg)
 
-    def test_label_color(self):
-
-        childs = self.root.winfo_children()
-        label = next(
-                el for el in childs if isinstance(
-                    el, tk.Label
-                    ) and el["text"] == "test Label"
+    def test_entry_task_color(self):
+        childs: list[tk.Widget] = self.root.winfo_children()
+        entry: tk.Entry = next(
+                el for el in childs if isinstance(el, tk.Entry)
                 )
-       
         
         expected_vals = ("#89EBEB", "#000000")
-        real_vals = (label["bg"], label["fg"])
-        msg = "Improper color scheme of Label"
+        real_vals: tp.Iterable[str] = (entry["bg"], entry["fg"])
+        msg = "Improper color scheme of Entry"
         
         for exp, real in zip(expected_vals, real_vals):
             
@@ -410,15 +430,14 @@ class TestColorDeepBlue(unittest.TestCase):
                 self.assertEqual(exp, real, msg)                
 
     def test_label_time_color(self):
-        childs = self.root.winfo_children()
-        label = next(
-                el for el in childs if isinstance(
-                    el, tk.Label
-                    ) and el["text"] == "test Label"
+
+        childs: list[tk.Widget] = self.root.winfo_children()
+        label_time: tk.Label = next(
+                el for el in childs if isinstance(el, tk.Label)
                 )
         
-        expected_vals = ("#89EBEB", "#000000")
-        real_vals = (label["bg"], label["fg"])
+        expected_vals = ("#062656", "#4FC500")
+        real_vals = (label_time["bg"], label_time["fg"])
         msg = "Improper color scheme of LabelTime"
         
         for exp, real in zip(expected_vals, real_vals):

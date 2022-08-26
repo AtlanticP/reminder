@@ -67,7 +67,7 @@ class App(tk.Tk):
         self.after(1000, self._current_time)
 
     def _window_task(self) -> None:
-        TaskWindow()._init_win_task()
+        TaskWindow()
             
     def _check_tasks(self) -> None:
 
@@ -84,7 +84,7 @@ class App(tk.Tk):
                 start = datetime.strptime(start_str, self._pattern_time)
     
                 if now > start:
-                    TaskWindow()._init_win_task(task=task)
+                    TaskWindow(task=task)
                 else: 
                     start_str = start.strftime(self._pattern_time)
                     writer.writerow({"start": start_str, "task": task})

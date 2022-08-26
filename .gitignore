@@ -3,4 +3,6 @@ tasks.csv
 temp/
 test_temp.py
 __pycache__/
+asd.py 
+task_test.csv
 
