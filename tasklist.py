@@ -13,7 +13,6 @@ class TaskList(tk.Toplevel):
 
     def __init__(self, fname: str, scheme: Schemes="deep blue", *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        # self.geometry="400x400"
         self.resizable(False, False)
         self.attributes("-topmost", 1)
         self.fname = fname      # File name
@@ -52,11 +51,24 @@ class TaskList(tk.Toplevel):
         entry_task.configure(**self.scheme["entry_task"])
         entry_task.pack(side="left")
 
-        entry_task.bind("<Button-1>", lambda e: TaskWindow(e.widget.get()))
+        entry_task.bind("<Button-1>", self._click_task)
         
         label_time = tk.Label(frame, text=time)
         label_time.configure(**self.scheme["label_time"])
         label_time.pack(side="left")
+
+    def _click_task(self, e: tk.Event) -> None:
+        childs: list[tk.Widget] = self.winfo_children()
+        TaskWindow(e.widget.get())
+
+        for widget in childs:
+
+            if isinstance(widget, tk.Frame):
+                entry_task: tk.Entry = widget.winfo_children()[0]    # type: ignore
+                task: str = entry_task.get()
+                
+                if e.widget.get() == task:
+                    widget.destroy()
 
     def _exit(self):
         self.destroy()
