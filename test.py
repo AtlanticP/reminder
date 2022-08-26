@@ -60,7 +60,7 @@ class TestSaveTask(TestGlobal):
             # to avoid create container            
             for last in reader: pass
             
-            for exp, real in zip(expected, last):
+            for exp, real in zip(expected, last):    # type: ignore
                 with self.subTest(i=exp):
                     self.assertEqual(exp, real)
 
@@ -71,8 +71,8 @@ class TestDateTimeWindow(unittest.TestCase):
     def setUp(self):
         self.root = tk.Tk()
         self.win_dt = DateTimeWindow()
-        self.win_dt.task = "text for dev purposes"
-        self.win_dt._init_win_dt(self.win_dt.task)
+        self.task = "text for dev purposes"
+        self.win_dt._init_win_dt(self.task)
         self.root.dooneevent()
         
     def tearDown(self):
@@ -132,6 +132,7 @@ class TestTaskWindow(TestGlobal):
         self.assertEqual(expected, bg)
 
     def test_remind_buttons(self):
+        # __import__('pdb').set_trace()
         top_level = next(el for el in self.root.winfo_children() if isinstance(el, tk.Toplevel))
         frames = [el for el in top_level.winfo_children() if isinstance(el, tk.Frame)]
         button_texts = [el["text"] for frame in frames for el in frame.winfo_children() if isinstance(el, tk.Button)]
@@ -141,7 +142,8 @@ class TestTaskWindow(TestGlobal):
                 msg = f"tk.Toplevel object has no button with {delta}"
                 self.assertIn(delta, button_texts, msg)
 
-        
+
+# @unittest.skip
 class TestTaskList(TestGlobal):
 
     def setUp(self):
@@ -149,17 +151,18 @@ class TestTaskList(TestGlobal):
 
         pattern_time = '%Y-%m-%d %H:%M:%S'
         
-        for i, delta in enumerate((0, 0, 1)):
+        for  delta in (0, 0, 1):
             task =  f"text {delta}"
             start = datetime.now() + timedelta(days=delta)
             SaveTask._save_task(start.strftime(pattern_time), task)
         
         fname = "tasks.csv"
         scheme = "deep blue"
+        self.root = tk.Tk()
         self.task_list = TaskList(fname, scheme)
 
     def tearDown(self):
-        self.task_list.destroy()
+        self.root.destroy()
         
     def test_task_list_exists(self):
         self.assertIsInstance(self.task_list, tk.Toplevel)

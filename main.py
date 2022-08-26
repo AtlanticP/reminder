@@ -55,9 +55,7 @@ class App(tk.Tk):
         self.configure(**scheme["main"]) 
         self.label_time.configure(**scheme["label_time"])
         
-        buttons = (el for el in self.winfo_children() if isinstance(el, tk.Button))
-        
-        for button in buttons:
+        for button in self.buttons:
             button.configure(**scheme["button"])
 
         
