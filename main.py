@@ -1,4 +1,3 @@
-from typing import Literal, Union, Dict
 import tkinter as tk
 import tkinter.font    # type: ingore
 import sys

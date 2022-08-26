@@ -5,7 +5,7 @@ from functools import partial
 from datetime import date, time
 
 from savetask import SaveTask
-#%%
+
 
 class CustomToplevel(tk.Toplevel):
     """ to pass type checking"""
@@ -33,16 +33,18 @@ class DateTimeWindow(SaveTask):
         self.win_dt.but_ok.pack(expand=True, fill="both")
         
     def _get_win_datetime(self, task: str) -> None:
-        date = self.win_dt.cal.selection_get()
-        hours = self.win_dt.time.hours_picker.hours
-        minutes = self.win_dt.time.minutes_picker.minutes
-        start_str = f"{date} {hours}:{minutes}"
+        date = str(self.win_dt.cal.selection_get())
 
-        if len(start_str) == 15:
-            start_str += "0"
-        
-        start_str += ":00"    # seconds
-        
+        hours: str = str(self.win_dt.time.hours_picker.hours)
+        if len(hours) == 1:
+            hours = '0' + hours
+
+        minutes: str = str(self.win_dt.time.minutes_picker.minutes)
+        if len(minutes) == 1:
+            minutes = "0" + minutes
+
+        start_str = f"{date} {hours}:{minutes}:00"
+
         self._save_task(start_str, task)        
         self.win_dt.destroy()        
         
