@@ -12,14 +12,15 @@ from hinting import Accepted_structures, Schemes
 from colors import COLORS
 
 class TaskWindow(DateTimeWindow):
-    
-    _pattern_time = "%Y-%m-%d %H:%M:%S"
 
     def __init__(self, task: Optional[str]=None, scheme: Schemes="deep blue") -> None:
+        self._pattern_time: str = "%Y-%m-%d %H:%M:%S"
         self._task: Optional[str] = task
-        self._init_win_task()
         self.scheme: Accepted_structures = COLORS[scheme]
+
+        self._init_win_task()
         self._set_colors()
+        self._get_task()
 
     def _init_win_task(self) -> None:
         
@@ -68,11 +69,18 @@ class TaskWindow(DateTimeWindow):
         tk.Button(frame1, text="1 day", command=func_random).pack(side="left", fill="x", expand=True)        
         
         func_random = partial(self._count_start_time, delta_str=rand_period())
-        tk.Button(frame2, text="random", command=func_random).pack(side="left", fill="x", expand=True)        
+        tk.Button(frame2, text="random", command=func_random) \
+                         .pack(side="left", fill="x", expand=True)        
 
-        tk.Button(frame2, text="choose", command=self._pass_to_win_dt).pack(side="left", fill="x", expand=True)
+        tk.Button(frame2, text="choose", command=self._pass_to_win_dt) \
+                         .pack(side="left", fill="x", expand=True)
         
-        tk.Button(frame2, text="end task", command=self._end_task).pack(side="left", fill="x", expand=True)
+        tk.Button(frame2, text="end task", command=self._end_task) \
+                         .pack(side="left", fill="x", expand=True)
+
+    def _get_task(self):
+        self._task = self.text_task.get(1.0, "end")
+        self.win_task.after(1000, self._get_task)            
 
     def _set_colors(self) -> None:
         self.win_task.configure(**self.scheme["main"])
@@ -110,6 +118,12 @@ class TaskWindow(DateTimeWindow):
         
     def _end_task(self) -> None:
         self.win_task.destroy()
+
+    def __del__(self) -> None:
+        pattern_time = '%Y-%m-%d %H:%M:%S'
+        start_str = datetime.now().strftime(pattern_time)
+        if self._task:
+            self._save_task(start_str, self._task)
         
 if __name__ == "__main__":
     
@@ -120,6 +134,5 @@ if __name__ == "__main__":
     root = tk.Tk()    
     root.font = tk.font.nametofont("TkDefaultFont")    # type: ignore
     root.font.config(size=14, family="Times", weight="bold")    # type: ignore
-    # __import__('pdb').set_trace()
     TaskWindow()
     root.mainloop()

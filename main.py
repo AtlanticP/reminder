@@ -16,8 +16,9 @@ class App(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
                 
-        self.fname: str = "tasks.csv" # file where tasks are stored
+        self.tasks = {}
 
+        self.fname: str = "tasks.csv" # file where tasks are stored
         if not os.path.isfile(self.fname):
             with open(self.fname, "w") as file:
                 writer = csv.writer(file, lineterminator="\n")
