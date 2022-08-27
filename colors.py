@@ -1,6 +1,6 @@
-from hinting import Accepted_schemes
+from hinting import Schemes
 
-COLORS: Accepted_schemes = {
+COLORS: Schemes = {
         "deep blue": {
             "main": {
                 "bg": "#011127",

@@ -8,15 +8,17 @@ import random
 
 from dtwindow import DateTimeWindow 
 
-from hinting import Accepted_structures, Schemes
+from hinting import Scheme, Scheme_name
 from colors import COLORS
 
 class TaskWindow(DateTimeWindow):
 
-    def __init__(self, task: Optional[str]=None, scheme: Schemes="deep blue") -> None:
+    def __init__(self, task: Optional[str]=None, 
+                scheme_name: Scheme_name="deep blue") -> None:
+
         self._pattern_time: str = "%Y-%m-%d %H:%M:%S"
         self._task: Optional[str] = task
-        self.scheme: Accepted_structures = COLORS[scheme]
+        self.scheme: Scheme = COLORS[scheme_name]
 
         self._init_win_task()
         self._set_colors()

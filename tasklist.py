@@ -6,18 +6,19 @@ import csv
 import os
 
 from colors import COLORS
-from hinting import Schemes, Accepted_structures
+from hinting import Scheme_name, Scheme
 from taskwindow import TaskWindow
 
 class TaskList(tk.Toplevel):
 
-    def __init__(self, fname: str, scheme: Schemes="deep blue", *args, **kwargs) -> None:
+    def __init__(self, fname: str, scheme: Scheme_name="deep blue",
+                *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.resizable(False, False)
         self.attributes("-topmost", 1)
         self.fname = fname      # File name
         self.tasks = []
-        self.scheme = COLORS[scheme]    # type: Accepted_structures
+        self.scheme: Scheme = COLORS[scheme]
         self._set_widgets()
 
     def _set_widgets(self) -> None:
@@ -31,16 +32,31 @@ class TaskList(tk.Toplevel):
 
         with open(self.fname) as csvfile:
             reader = csv.DictReader(csvfile)
+            task = None
 
-            for line in reader:
+            while True:
 
-                pattern_time = '%Y-%m-%d %H:%M:%S'
-                date = datetime.strptime(line["start"], pattern_time).date()
+                try:
+                    line = next(reader)
+                    pattern_time = '%Y-%m-%d %H:%M:%S'
+                    date = datetime.strptime(line["start"],
+                            pattern_time).date()
 
-                if date == today:
-                    time = line["start"][11:-3]
-                    task = line["task"]
-                    self._set_task(task=task, time=time)
+                    if date == today:
+                        time = line["start"][11:-3]
+                        task = line["task"]
+
+                        self._set_task(task=task, time=time)
+
+                except StopIteration:
+
+                    if not task:
+                        pattern_time = "%H:%M"
+                        time = datetime.now().strftime(pattern_time)
+                        task = "There is no any task yet"
+                        self._set_task(task=task, time=time)
+
+                    break
 
     def _set_task(self, task: str, time: str) -> None:
         frame = tk.Frame(self, **self.scheme["frame"])

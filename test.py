@@ -313,12 +313,18 @@ class TestApp(TestGlobal):
         self.root.destroy()
     
     def test_button_task_exists(self):
+        childs: list[tk.Widget] = self.root.winfo_children()
+        n_but: int = len([el for el in childs if isinstance(el, tk.Button)])
+        expected = 2
+        self.assertEqual(expected, n_but)
+        
+    def test_button_list_text(self):
         but_task = self.root.winfo_children()[-1]
-        expected = tk.Button
-        self.assertEqual(expected, type(but_task))
+        expected = "list"
+        self.assertEqual(expected, but_task["text"])
         
     def test_button_task_text(self):
-        but_task = self.root.winfo_children()[-1]
+        but_task = self.root.winfo_children()[-2]
         expected = "task"
         self.assertEqual(expected, but_task["text"])
         
@@ -327,15 +333,6 @@ class TestApp(TestGlobal):
         childs = (type(i) for i in self.root.winfo_children())
         self.assertIn(tk.Toplevel, childs)
         
-    # def test_save_task_destroy_window_task(self):
-    #     task_window = TaskWindow()
-    #     task_window._init_win_task()
-    #     task_window._end_task()
-    #     childs = (type(i) for i in self.root.winfo_children())
-    #     msg = "After saving the window task must be destroyed"
-    #
-    #     import pdb; pdb.set_trace()
-    #     self.assertNotIn(tk.Toplevel, childs, msg)
 
 # @unittest.skip
 class Test2App(TestGlobal):
