@@ -13,16 +13,19 @@ from colors import COLORS
 
 class TaskWindow(DateTimeWindow):
 
-    def __init__(self, task: Optional[str]=None, 
-                scheme_name: Scheme_name="deep blue") -> None:
+    def __init__(self, tasks: list[dict],  # order of arguments and hinting
+                text: Optional[str]=None, 
+                scheme_name: Scheme_name="deep blue",
+                ) -> None:
 
         self._pattern_time: str = "%Y-%m-%d %H:%M:%S"
-        self._task: Optional[str] = task
+        self._text: Optional[str] = text
         self.scheme: Scheme = COLORS[scheme_name]
+
+        self.tasks: list[dict] = tasks
 
         self._init_win_task()
         self._set_colors()
-        self._get_task()
 
     def _init_win_task(self) -> None:
         
@@ -44,8 +47,8 @@ class TaskWindow(DateTimeWindow):
         self.text_task: tk.Text = tk.Text(self.win_task, bg="light yellow", 
                                 font=font_text, height=10, width=8)
         
-        if self._task:
-            self.text_task.insert("1.0", self._task)
+        if self._text:
+            self.text_task.insert("1.0", self._text)
             
         self.text_task.pack(fill=tk.X)
         
@@ -80,10 +83,6 @@ class TaskWindow(DateTimeWindow):
         tk.Button(frame2, text="end task", command=self._end_task) \
                          .pack(side="left", fill="x", expand=True)
 
-    def _get_task(self):
-        self._task = self.text_task.get(1.0, "end")
-        self.win_task.after(1000, self._get_task)            
-
     def _set_colors(self) -> None:
         self.win_task.configure(**self.scheme["main"])
         childs: list[tk.Widget] = self.win_task.winfo_children()
@@ -105,36 +104,48 @@ class TaskWindow(DateTimeWindow):
             but.configure(**self.scheme["button"])
             
     def _count_start_time(self, delta_str: str) -> None:
+        """Counts delta for a start time of the task"""
+        self.is_extreme = False
+
         params = {key: int(val) for key, val in map(lambda x: x.split("="), delta_str.split(" "))}
         delta = timedelta(**params)
         now = datetime.now()
-        start = (now + delta).strftime(self._pattern_time) 
-        task = self.text_task.get(1.0, "end")
-        self._save_task(start, task)
+        start = (now + delta)
+        text = self.text_task.get(1.0, "end")
+        self.tasks.append({"start": start, "text": text})
+        # self._save_task(start, task)   # delete this functionality
         self.win_task.destroy()
         
     def _pass_to_win_dt(self):
-        task = self.text_task.get(1.0, "end")
-        self._init_win_dt(task)
+        """???????????????"""
+        text = self.text_task.get(1.0, "end")
+        self._init_win_dt(text)
         self.win_task.destroy()
         
     def _end_task(self) -> None:
         self.win_task.destroy()
 
-    def __del__(self) -> None:
-        pattern_time = '%Y-%m-%d %H:%M:%S'
-        start_str = datetime.now().strftime(pattern_time)
-        if self._task:
-            self._save_task(start_str, self._task)
+    # def __del__(self) -> None:
+    #     """If exit from the window is not through buttons,
+    #     then implement this fucntion"""
+    #
+    #     srart = datetime.now()
+    #     self.
+    #     
+    #     if self._text:
+    #         self.tasks.append({"start": start, "text": self._text})
         
 if __name__ == "__main__":
     
     fname = "tasks.csv"
     if not os.path.isfile(fname):
-        raise FileNotFoundError("It must be created tasks.csv file in the cwd with header 'start,task'")
+        alarm = "It must be created tasks.csv file in the cwd with header 'start,text'"
+        raise FileNotFoundError(alarm)
 
     root = tk.Tk()    
     root.font = tk.font.nametofont("TkDefaultFont")    # type: ignore
     root.font.config(size=14, family="Times", weight="bold")    # type: ignore
-    TaskWindow()
+    tasks = []
+    text = "Test task"
+    TaskWindow(tasks, text)
     root.mainloop()

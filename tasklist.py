@@ -32,7 +32,7 @@ class TaskList(tk.Toplevel):
 
         with open(self.fname) as csvfile:
             reader = csv.DictReader(csvfile)
-            task = None
+            text = None
 
             while True:
 
@@ -44,26 +44,26 @@ class TaskList(tk.Toplevel):
 
                     if date == today:
                         time = line["start"][11:-3]
-                        task = line["task"]
+                        text = line["text"]
 
-                        self._set_task(task=task, time=time)
+                        self._set_task(text=text, time=time)
 
                 except StopIteration:
 
-                    if not task:
+                    if not text:
                         pattern_time = "%H:%M"
                         time = datetime.now().strftime(pattern_time)
-                        task = "There is no any task yet"
-                        self._set_task(task=task, time=time)
+                        text = "There is no any task yet"
+                        self._set_task(text=text, time=time)
 
                     break
 
-    def _set_task(self, task: str, time: str) -> None:
+    def _set_task(self, text: str, time: str) -> None:
         frame = tk.Frame(self, **self.scheme["frame"])
         frame.pack()
 
         entry_task = tk.Entry(frame, width=20)
-        entry_task.insert(0, task)
+        entry_task.insert(0, text)
         entry_task.configure(**self.scheme["entry_task"])
         entry_task.pack(side="left")
 
@@ -81,25 +81,25 @@ class TaskList(tk.Toplevel):
 
             if isinstance(widget, tk.Frame):
                 entry_task: tk.Entry = widget.winfo_children()[0]    # type: ignore
-                task: str = entry_task.get()
+                text: str = entry_task.get()
                 
-                if e.widget.get() == task:
+                if e.widget.get() == text:
                     widget.destroy()
 
     def _exit(self):
         self.destroy()
      
 
-def get_task()-> str:
-    """get random task: random text"""
+def get_text()-> str:
+    """get random text"""
     
     s = string.ascii_lowercase + string.digits
     n_letters = lambda: random.randint(1, 10)
     n_words = random.randint(1, 20)
     get_word = lambda : ''.join(random.sample(s, n_letters()))
-    task: str = ' '.join(get_word() for _ in range(n_words))
+    text: str = ' '.join(get_word() for _ in range(n_words))
 
-    return task + "\n" 
+    return text + "\n" 
 
 class FileManager:
     """Context maneger that creates temporarily file for dev purpose"""
@@ -112,16 +112,16 @@ class FileManager:
         start_str = datetime.now().strftime(pattern_time)
         
         with open(self.fname, "w") as csvfile:
-            fieldnames = ("start", "task")
+            fieldnames = ("start", "text")
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             writer.writeheader()
         
             for _ in range(10):
-                task = get_task()
+                text = get_text()
                 
                 dct = {
                     "start": start_str,
-                    "task": task
+                    "text": text
                     }
                 writer.writerow(dct)    # type: ignore
                 

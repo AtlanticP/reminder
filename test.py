@@ -32,7 +32,7 @@ class TestGlobal(unittest.TestCase):
             
         with open(self.fname, "w") as file:
             writer = csv.writer(file, lineterminator="\n")
-            writer.writerow(["start", "task"])
+            writer.writerow(["start", "text"])
                 
     def tearDown(self):
         '''recover main base'''
@@ -101,8 +101,9 @@ class TestTaskWindow(TestGlobal):
         super().setUp()
         self.root = tk.Tk()
         self.task = "text for test purpose"
+        tasks = [{}]
         scheme = "deep blue"
-        TaskWindow(self.task, scheme)    
+        TaskWindow(tasks, self.task, scheme)    
 
     def tearDown(self):
         self.root.destroy()
@@ -293,7 +294,7 @@ class TestDB(TestGlobal):
 
     def test_DB_contains(self):
         msg = '"tasks.csv first row (header) must be "start,task"'
-        expected = "start,task\n"
+        expected = "start,text\n"
         
         with open(self.fname, "r") as file:
             text = file.read()
@@ -315,17 +316,22 @@ class TestApp(TestGlobal):
     def test_button_task_exists(self):
         childs: list[tk.Widget] = self.root.winfo_children()
         n_but: int = len([el for el in childs if isinstance(el, tk.Button)])
-        expected = 2
+        expected = 3
         self.assertEqual(expected, n_but)
         
+    def test_button_task_text(self):
+        but_task = self.root.winfo_children()[-3]
+        expected = "task"
+        self.assertEqual(expected, but_task["text"])
+
     def test_button_list_text(self):
-        but_task = self.root.winfo_children()[-1]
+        but_task = self.root.winfo_children()[-2]
         expected = "list"
         self.assertEqual(expected, but_task["text"])
         
-    def test_button_task_text(self):
-        but_task = self.root.winfo_children()[-2]
-        expected = "task"
+    def test_button_extit_text(self):
+        but_task = self.root.winfo_children()[-1]
+        expected = "exit"
         self.assertEqual(expected, but_task["text"])
         
     def test_create_task_win(self):

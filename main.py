@@ -5,25 +5,26 @@ import os
 import csv
 from datetime import datetime
 
+from movewin import MoveWin
 from taskwindow import TaskWindow
 from colors import COLORS
 from hinting import Scheme_name, Scheme
 from tasklist import TaskList
 
-class App(tk.Tk):
-    
-    _pattern_time = "%Y-%m-%d %H:%M:%S"  # type: str
+class App(MoveWin):
     
     def __init__(self) -> None:
         super().__init__()
-                
-        self.tasks = {}
+
+        self._pattern_time = "%Y-%m-%d %H:%M:%S"
+        self.tasks = []
 
         self.fname: str = "tasks.csv" # file where tasks are stored
         if not os.path.isfile(self.fname):
             with open(self.fname, "w") as file:
-                writer = csv.writer(file, lineterminator="\n")
-                writer.writerow(["start", "task"])
+                fieldnames = ("start", "text")
+                writer = csv.DictWriter(file, fieldnames=fieldnames)
+                writer.writeheader()
                 
         self.buttons = []
         self.scheme: Scheme_name = "deep blue"
@@ -31,7 +32,7 @@ class App(tk.Tk):
         self._set_widgets()
         self._set_colorscheme()
         self._current_time()
-        self._check_tasks()
+        self._load_tasks()
 
     def _general_properties(self) -> None:
         self.font = tkinter.font.nametofont("TkDefaultFont")
@@ -51,8 +52,14 @@ class App(tk.Tk):
         but_task.pack(**params_but)
         self.buttons.append(but_task)
         
-        but_exit = tk.Button(self, text="list", 
+        but_list = tk.Button(self, text="list", 
                             command=self._get_list)
+        but_list.pack(**params_but)
+        self.buttons.append(but_list)
+
+
+        but_exit = tk.Button(self, text="exit", 
+                            command=self._app_exit)
         but_exit.pack(**params_but)
         self.buttons.append(but_exit)
         
@@ -70,36 +77,73 @@ class App(tk.Tk):
         self.after(1000, self._current_time)
 
     def _window_task(self) -> None:
-        TaskWindow()
+        TaskWindow(text=None, tasks=self.tasks,
+                    scheme_name=self.scheme)
             
+    def _load_tasks(self) -> None:
+        """ Read csv file where tasks are stored, append tasks 
+            and call function that check tasks to appears.
+        """
+
+        with open(self.fname, "r") as csvfile:
+            fieldnames = ("start", "text")
+            reader = csv.DictReader(csvfile, fieldnames=fieldnames)
+            next(reader)    # header
+            
+            for row in reader:
+                start = datetime.strptime(row["start"], self._pattern_time)
+                self.tasks.append({"start": start, "text": row["text"]})
+
+        self._check_tasks()
+                
     def _check_tasks(self) -> None:
-
-        fname_temp = "temp.csv"
-        
-        with open(self.fname) as infile, open(fname_temp, "w") as outfile:
-            reader = csv.reader(infile)
-            header = next(reader)
-            writer = csv.DictWriter(outfile, header)
-            writer.writeheader()
-            
-            for start_str, task  in reader:
-                now = datetime.now()
-                start = datetime.strptime(start_str, self._pattern_time)
+        """Pop task window if there is a time for a task."""
     
-                if now > start:
-                    TaskWindow(task=task)
-                else: 
-                    start_str = start.strftime(self._pattern_time)
-                    writer.writerow({"start": start_str, "task": task})
-                    
-        os.rename(fname_temp, self.fname)
-        
-        self.after(1000, self._check_tasks)            
+        for i, el in enumerate(self.tasks):
 
-    def _get_list(self):
+            now = datetime.now()
+
+            if now > el["start"]:
+
+                TaskWindow(self.tasks, text=el["text"])
+                self.tasks.pop(i)
+        
+        self.after(1000, self._check_tasks)
+
+    def _get_list(self) -> None:
         TaskList(self.fname, self.scheme)
+    
+    def _app_exit(self) -> None:
+        """Get taskss from open TaskWinow, write down 
+        all task and exit"""
+
+        start: str = datetime.now().strftime(self._pattern_time)
+    
+        for el in self.winfo_children():
+
+            if isinstance(el, tk.Toplevel):
+                textarea: tk.Text = el.winfo_children()[0]     # type: ignore
+                text = textarea.get(1.0, "end")
+
+                if text:
+                    self.tasks.append({"start": start, "text": text})
+
         
-        
+        with open(self.fname, "w") as csvfile:
+            fieldnames: tuple["str", "str"] = ("start", "text")
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+
+            for task in self.tasks:
+                writer.writerow({"start": start, "text": task["text"]})
+
+        self.destroy()
+
+
+
+    # def __del__(self):
+
+
 if __name__ == "__main__":        
     root = App()
     root.mainloop()
