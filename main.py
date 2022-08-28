@@ -111,7 +111,7 @@ class App(MoveWin):
         self.after(1000, self._check_tasks)
 
     def _get_list(self) -> None:
-        TaskList(self.fname, self.scheme)
+        TaskList(self.tasks, self.scheme)
     
     def _app_exit(self) -> None:
         """Get taskss from open TaskWinow, write down 

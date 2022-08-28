@@ -4,20 +4,22 @@ import random
 import string
 import csv
 import os
+from typing import Optional
 
 from colors import COLORS
 from hinting import Scheme_name, Scheme
 from taskwindow import TaskWindow
 
+
+
 class TaskList(tk.Toplevel):
 
-    def __init__(self, fname: str, scheme: Scheme_name="deep blue",
-                *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+    def __init__(self, tasks: list[dict], 
+            scheme: Scheme_name) -> None:
+        super().__init__()
         self.resizable(False, False)
         self.attributes("-topmost", 1)
-        self.fname = fname      # File name
-        self.tasks = []
+        self.tasks = tasks
         self.scheme: Scheme = COLORS[scheme]
         self._set_widgets()
 
@@ -28,35 +30,26 @@ class TaskList(tk.Toplevel):
         but_ok.pack(fill="x")
 
     def _set_tasks(self) -> None:
+        pattern_time = "%H:%M"
         today = datetime.now().date()
 
-        with open(self.fname) as csvfile:
-            reader = csv.DictReader(csvfile)
-            text = None
+        text: Optional[str] = None
 
-            while True:
+        for task in self.tasks:
 
-                try:
-                    line = next(reader)
-                    pattern_time = '%Y-%m-%d %H:%M:%S'
-                    date = datetime.strptime(line["start"],
-                            pattern_time).date()
+            date = task["start"].date()
 
-                    if date == today:
-                        time = line["start"][11:-3]
-                        text = line["text"]
+            if date == today:
+                time = task["start"].strftime(pattern_time)
+                text = task["text"]
 
-                        self._set_task(text=text, time=time)
+                if not text:
+                    text = "There is no any task yet"
+                    time = today.strftime(pattern_time)
+                    self._set_task(text=text, time=time)
 
-                except StopIteration:
+                self._set_task(text=text, time=time)
 
-                    if not text:
-                        pattern_time = "%H:%M"
-                        time = datetime.now().strftime(pattern_time)
-                        text = "There is no any task yet"
-                        self._set_task(text=text, time=time)
-
-                    break
 
     def _set_task(self, text: str, time: str) -> None:
         frame = tk.Frame(self, **self.scheme["frame"])
@@ -100,43 +93,26 @@ def get_text()-> str:
     text: str = ' '.join(get_word() for _ in range(n_words))
 
     return text + "\n" 
-
-class FileManager:
-    """Context maneger that creates temporarily file for dev purpose"""
-
-    def __init__(self, fname: str) -> None:
-        self.fname = fname
-
-    def __enter__(self):
-        pattern_time = '%Y-%m-%d %H:%M:%S'
-        start_str = datetime.now().strftime(pattern_time)
-        
-        with open(self.fname, "w") as csvfile:
-            fieldnames = ("start", "text")
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            writer.writeheader()
-        
-            for _ in range(10):
-                text = get_text()
                 
-                dct = {
-                    "start": start_str,
-                    "text": text
-                    }
-                writer.writerow(dct)    # type: ignore
-                
-    def __exit__(self, type, value, traceback):
-        os.remove(self.fname)
-        
-
 if __name__ == "__main__":
 
-    fname = "tasks_temp.csv"
+    pattern_time = '%Y-%m-%d %H:%M:%S'
+    start = datetime.now()
+    
+    tasks: list[dict] = []
 
-    with FileManager(fname):
+    for _ in range(10):
+        text = get_text()
+        
+        dct = {
+            "start": start,
+            "text": text
+            }
 
-        root = tk.Tk()
-        TaskList(fname, "deep blue")
-        root.mainloop()
+        tasks.append(dct)
 
+    root = tk.Tk()
+    scheme: Scheme_name = "deep blue"
+    TaskList(tasks, scheme)
+    root.mainloop()
 

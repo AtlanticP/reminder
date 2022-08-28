@@ -16,6 +16,7 @@ from colors import COLORS
 from tasklist import TaskList
 
 import typing as tp
+from hinting import Scheme_name
 
 # @unittest.skip
 class TestGlobal(unittest.TestCase):
@@ -151,16 +152,16 @@ class TestTaskList(TestGlobal):
         super().setUp()
 
         pattern_time = '%Y-%m-%d %H:%M:%S'
-        
+        self.tasks = [] 
+
         for  delta in (0, 0, 1):
-            task =  f"text {delta}"
+            text =  f"text {delta}"
             start = datetime.now() + timedelta(days=delta)
-            SaveTask._save_task(start.strftime(pattern_time), task)
+            self.tasks.append({"start": start, "text": text})
         
-        fname = "tasks.csv"
-        scheme = "deep blue"
+        scheme: Scheme_name = "deep blue"
         self.root = tk.Tk()
-        self.task_list = TaskList(fname, scheme)
+        self.task_list = TaskList(self.tasks, scheme)
 
     def tearDown(self):
         self.root.destroy()
@@ -202,14 +203,14 @@ class TestTaskList(TestGlobal):
         self.assertEqual(expected, existed, msg)
             
     def test_entries_content(self):
-        """check TaskList chooses today's entries"""
+        """check TaskList today's content of the entries"""
 
         childs: tp.List[tk.Widget] = self.task_list.winfo_children()
-        entries = (el.winfo_children()[0] for el in childs if isinstance(el, tk.Frame))
+        entries = (el.winfo_children()[0] for el in childs 
+                                            if isinstance(el, tk.Frame))
         existed_texts = (entry.get() for entry in entries)    # type: ignore
 
         task: str = "text 0"
-        start_str: str = datetime.now().strftime("%H:%M")
         expected_texts: tp.Tuple[str, ...] = (task,)*2 
 
         for exp, real in zip(expected_texts, existed_texts):
