@@ -6,9 +6,10 @@ COLORS: Schemes = {
                 "bg": "#011127",
                 },
             "label_time": {
-                "bg": "#062656",
-                "fg": "#4FC500",
-                "highlightbackground": "#000000"
+                "bg": "#020B2c",
+                "fg": "#66FF00",
+                "borderwidth": 4,
+                "relief": "groove"
                 },
             "button": {
                 "bg": "#062656",

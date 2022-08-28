@@ -42,7 +42,7 @@ class App(MoveWin):
         
     def _set_widgets(self) -> None:
         my_font = ("times", 24)
-        self.label_time = tk.Label(self, font=my_font, height=2)
+        self.label_time = tk.Label(self, font=my_font, height=3)
         self.label_time.pack(side=tk.LEFT)
 
         params_but = {"side":"top", "fill":"both", "expand":True}
@@ -138,10 +138,6 @@ class App(MoveWin):
                 writer.writerow({"start": start, "text": task["text"]})
 
         self.destroy()
-
-
-
-    # def __del__(self):
 
 
 if __name__ == "__main__":        

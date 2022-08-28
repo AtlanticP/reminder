@@ -271,7 +271,7 @@ class TestTaskList(TestGlobal):
         labels = (el.winfo_children()[1] for el in childs if isinstance(el, tk.Frame))
         existed_colors = (entry["bg"] for entry in labels)
 
-        expected_color = "#062656"
+        expected_color = "#020B2c"
 
         for color in existed_colors:
 
@@ -443,7 +443,7 @@ class TestColorDeepBlue(unittest.TestCase):
                 el for el in childs if isinstance(el, tk.Label)
                 )
         
-        expected_vals = ("#062656", "#4FC500")
+        expected_vals = ("#020B2c", "#66FF00")
         real_vals = (label_time["bg"], label_time["fg"])
         msg = "Improper color scheme of LabelTime"
         

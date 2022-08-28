@@ -16,6 +16,7 @@ class TaskList(tk.Toplevel):
 
     def __init__(self, tasks: list[dict], 
             scheme: Scheme_name) -> None:
+
         super().__init__()
         self.resizable(False, False)
         self.attributes("-topmost", 1)
