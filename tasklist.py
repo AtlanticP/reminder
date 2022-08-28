@@ -6,7 +6,7 @@ import csv
 import os
 from typing import Optional
 
-from colors import COLORS
+from colorschemes import COLORS
 from hinting import Scheme_name, Scheme
 from taskwindow import TaskWindow
 

@@ -9,7 +9,7 @@ import random
 from dtwindow import DateTimeWindow 
 
 from hinting import Scheme, Scheme_name
-from colors import COLORS
+from colorschemes import COLORS
 
 class TaskWindow(DateTimeWindow):
 

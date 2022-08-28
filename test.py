@@ -12,7 +12,7 @@ from dtwindow import DateTimeWindow
 from main import App
 from taskwindow import TaskWindow
 from savetask import SaveTask
-from colors import COLORS
+from colorschemes import COLORS
 from tasklist import TaskList
 
 import typing as tp

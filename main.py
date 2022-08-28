@@ -7,7 +7,7 @@ from datetime import datetime
 
 from movewin import MoveWin
 from taskwindow import TaskWindow
-from colors import COLORS
+from colorschemes import COLORS
 from hinting import Scheme_name, Scheme
 from tasklist import TaskList
 
