@@ -1,31 +1,65 @@
-import csv 
-from datetime import datetime 
-#%%
+import csv
+
+from service import PATTERN_TIME, FIELDNAMES
+from hinting import TaskListType, TaskType
+
+
 class SaveTask:
 
     @staticmethod
-    def _save_task(start_str: str, task: str) -> None:
-        
-        with open("tasks.csv", "a", newline='') as csvfile:
-            fieldnames = ("start", "task")
+    def _save_task(tasks: TaskListType, fname: str) -> None:
 
-            dct = {
-                "start": start_str,
-                "task": task
-                }
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            writer.writerow(dct)    # type: ignore
+        with open(fname, "a") as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=FIELDNAMES)
+        
+            task: TaskType
+            for task in tasks:
+                  
+                task_to_write: dict[str, str]
+                start: str = task["start"].strftime(PATTERN_TIME)
+                task_to_write = {"start": start, "text": task["text"]}
+                writer.writerow(task_to_write)    # type: ignore
 
 
 if __name__ == "__main__":
     
-    import os
-    
-    pattern_time = '%Y-%m-%d %H:%M:%S'
-    start_str = datetime.now().strftime(pattern_time)
-    task = f"text for dev purposes: {os.path.basename(__file__)}"
-    SaveTask._save_task(start_str, task)
-    
-    
-    file = "tasks.csv"
-    assert os.path.isfile(file), "Save Task doesn't work"
+    from datetime import datetime, timedelta
+
+    from service import get_text 
+    from filemanager import FileManager
+
+    from hinting import TaskListType
+
+    tasks: TaskListType = []
+
+    for _, delta in zip(range(3), [0, 0, 1]):
+        text: str = get_text()
+        start: datetime = datetime.now() + timedelta(days=delta)
+        task: TaskType = {"start": start, "text": text}
+
+        tasks.append(task)
+
+    fname: str = "tasks_temp.csv"     # filename
+
+    with FileManager(fname):
+        """Manager that creates temporarily file and then remove it"""
+
+        SaveTask._save_task(tasks, fname)
+
+        with open(fname, "r") as csvfile:
+            reader = csv.DictReader(csvfile, fieldnames=FIELDNAMES)
+            next(reader)      # header
+
+            row: dict[str, str]
+            for i, row in enumerate(reader):
+                
+                msg_text: str = f"Wrong text of task {i}"
+                assert tasks[i]["text"] == row["text"], msg_text
+
+                start: datetime = datetime.strptime(row["start"], 
+                                PATTERN_TIME)
+                expect: datetime =tasks[i]["start"].replace(microsecond=0) 
+            
+                msg_start: str = f"Wrong time of task {i}"
+                assert expect == start, msg_start
+
