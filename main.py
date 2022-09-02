@@ -3,31 +3,35 @@ import tkinter.font    # type: ingore
 import time
 import os
 import csv
-from datetime import datetime
+from datetime import datetime 
+from typing import Union
 
 from movewin import MoveWin
 from taskwindow import TaskWindow
 from colorschemes import COLORS
-from hinting import Scheme_name, Scheme
 from tasklist import TaskList
+from savetask import SaveTask
+from service import PATTERN_TIME, FIELDNAMES
 
-class App(MoveWin):
+from hinting import Scheme_name, Scheme, TaskType, TaskListType 
+
+
+class App(MoveWin, SaveTask):
     
     def __init__(self) -> None:
         super().__init__()
 
-        self._pattern_time = "%Y-%m-%d %H:%M:%S"
-        self.tasks = []
+        self.tasks: TaskListType = []
 
         self.fname: str = "tasks.csv" # file where tasks are stored
         if not os.path.isfile(self.fname):
             with open(self.fname, "w") as file:
-                fieldnames = ("start", "text")
-                writer = csv.DictWriter(file, fieldnames=fieldnames)
+                writer = csv.DictWriter(file, fieldnames=FIELDNAMES)
                 writer.writeheader()
                 
-        self.buttons = []
-        self.scheme: Scheme_name = "deep blue"
+        self.buttons: list[tk.Button] = []
+        self.scheme: Scheme = COLORS["brown"]
+
         self._general_properties()
         self._set_widgets()
         self._set_colorscheme()
@@ -41,11 +45,12 @@ class App(MoveWin):
         self.resizable(False, False)
         
     def _set_widgets(self) -> None:
-        my_font = ("times", 24)
+        my_font: tuple[str, int] = ("times", 24)
         self.label_time = tk.Label(self, font=my_font, height=3)
         self.label_time.pack(side=tk.LEFT)
 
-        params_but = {"side":"top", "fill":"both", "expand":True}
+        params_but: dict[str, Union[str, bool]] 
+        params_but= {"side":"top", "fill":"both", "expand":True}
         
         but_task = tk.Button(self, text="task", 
                             command=self._window_task)
@@ -64,21 +69,22 @@ class App(MoveWin):
         self.buttons.append(but_exit)
         
     def _set_colorscheme(self):
-        scheme: Scheme  = COLORS[self.scheme]
-        self.configure(**scheme["main"]) 
-        self.label_time.configure(**scheme["label_time"])
+        self.configure(**self.scheme["main"]) 
+        self.label_time.configure(**self.scheme["label_time"])
         
+        button: tk.Button
         for button in self.buttons:
-            button.configure(**scheme["button"])
+            button.configure(**self.scheme["button"])
         
     def _current_time(self) -> None:
-        time_string = time.strftime("%H:%M:%S %p")
+        """get current time for Label (a clock)"""
+        time_string: str = time.strftime("%H:%M:%S %p")
         self.label_time.config(text=time_string)
         self.after(1000, self._current_time)
 
     def _window_task(self) -> None:
         TaskWindow(text=None, tasks=self.tasks,
-                    scheme_name=self.scheme)
+                    scheme=self.scheme)
             
     def _load_tasks(self) -> None:
         """ Read csv file where tasks are stored, append tasks 
@@ -86,57 +92,52 @@ class App(MoveWin):
         """
 
         with open(self.fname, "r") as csvfile:
-            fieldnames = ("start", "text")
-            reader = csv.DictReader(csvfile, fieldnames=fieldnames)
+            reader = csv.DictReader(csvfile, fieldnames=FIELDNAMES)
             next(reader)    # header
             
             for row in reader:
-                start = datetime.strptime(row["start"], self._pattern_time)
-                self.tasks.append({"start": start, "text": row["text"]})
+                start: datetime 
+                start = datetime.strptime(row["start"], PATTERN_TIME)
+
+                task: TaskType  = {"start": start, "text": row["text"]}
+                self.tasks.append(task)
 
         self._check_tasks()
                 
     def _check_tasks(self) -> None:
         """Pop task window if there is a time for a task."""
-    
+
         for i, el in enumerate(self.tasks):
 
-            now = datetime.now()
+            now: datetime = datetime.now()
 
             if now > el["start"]:
 
-                TaskWindow(self.tasks, text=el["text"])
+                TaskWindow(el["text"], self.tasks, scheme=self.scheme)
                 self.tasks.pop(i)
         
         self.after(1000, self._check_tasks)
 
     def _get_list(self) -> None:
         TaskList(self.tasks, self.scheme)
-    
+
     def _app_exit(self) -> None:
         """Get taskss from open TaskWinow, write down 
         all task and exit"""
 
-        start: str = datetime.now().strftime(self._pattern_time)
+        start: datetime = datetime.now() 
     
+        el: tk.Widget
         for el in self.winfo_children():
 
-            if isinstance(el, tk.Toplevel):
+            if isinstance(el, TaskWindow):
                 textarea: tk.Text = el.winfo_children()[0]     # type: ignore
-                text = textarea.get(1.0, "end")
+                text: str = textarea.get(1.0, "end")
 
-                if text:
-                    self.tasks.append({"start": start, "text": text})
-
+                task: TaskType = {"start": start, "text": text}
+                self.tasks.append(task)
         
-        with open(self.fname, "w") as csvfile:
-            fieldnames: tuple["str", "str"] = ("start", "text")
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            writer.writeheader()
-
-            for task in self.tasks:
-                writer.writerow({"start": start, "text": task["text"]})
-
+        self._save_tasks(self.tasks, self.fname)
         self.destroy()
 
 

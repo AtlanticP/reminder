@@ -1,4 +1,3 @@
-from tkinter.ttk import LabelFrame
 import unittest
 import tkinter as tk
 from datetime import datetime, timedelta
@@ -14,9 +13,10 @@ from taskwindow import TaskWindow
 from savetask import SaveTask
 from colorschemes import COLORS
 from tasklist import TaskList
+from service import get_text, PATTERN_TIME
 
 import typing as tp
-from hinting import Scheme_name
+from hinting import Scheme_name, Scheme, TaskListType, TaskType
 
 # @unittest.skip
 class TestGlobal(unittest.TestCase):
@@ -27,7 +27,7 @@ class TestGlobal(unittest.TestCase):
         self.fname = "tasks.csv"
         if os.path.isfile(self.fname):
 
-            self.fname_temp = "task_test.csv"
+            self.fname_temp = "tasks_test.csv"
             shutil.copy(self.fname, self.fname_temp)
             os.remove(self.fname)
             
@@ -39,32 +39,92 @@ class TestGlobal(unittest.TestCase):
         '''recover main base'''
         
         os.rename(self.fname_temp, self.fname)
-
+        
 
 # @unittest.skip
 class TestSaveTask(TestGlobal):
-    
-    def test_save_task(self):
-        pattern_time = '%Y-%m-%d %H:%M:%S'
-        task =  f"text for dev purposes: {os.path.basename(__file__)}"
-        start_str = datetime.now().strftime(pattern_time)
+
+    def setUp(self):
+        super().setUp()
+
+        self.tasks: TaskListType = []
+
+        for delta in [0, 0, 1]:
+            text: str = get_text()
+            start: datetime = datetime.now() + timedelta(days=delta)
+            start = start.replace(microsecond=0)
+            task: TaskType = {"start": start, "text": text}
+
+            self.tasks.append(task)
         
-        SaveTask._save_task(start_str, task)
-        
-        expected = (start_str, task) 
+        # add empty task
+        start: datetime = datetime.now()
+        empty_task: TaskType 
+        empty_task = {"start": start, "text": "\n"}
+        self.tasks.append(empty_task)
+
+        self.fname: str = "tasks.csv"     # filename
+        SaveTask._save_tasks(self.tasks, self.fname)
+
+    def test_save_task_validate(self):
+        texts: tuple[str, str] = ("Some text", "\n")
+        expected_texts: tuple[bool, bool] = (True, False)
+
+        text: str
+        expected: bool
+        value: bool
+        for text, expected in zip(texts, expected_texts):
+            with self.subTest(i=text):
+                value = SaveTask._validate(text)
+                self.assertEqual(expected, value)
+
+    def test_save_task_empty_task(self):
+        """Don't save empty task"""
+
+        SaveTask._save_tasks
+
+        with open(self.fname, "r") as file:
+            
+            reader = csv.DictReader(file)
+
+            last : dict[str, str]
+            for last in reader: pass
+
+            not_expected: str = "\n"
+            msg = "Reminder must not save empty task"
+
+            self.assertNotEqual(not_expected, last, msg)    # type: ignore
+
+    def test_save_task_start(self):
         
         with open(self.fname, "r") as file:
             
-            reader = csv.reader(file)
-            next(reader)    # header
-            
-            # to avoid create container            
-            for last in reader: pass
-            
-            for exp, real in zip(expected, last):    # type: ignore
-                with self.subTest(i=exp):
-                    self.assertEqual(exp, real)
+            reader = csv.DictReader(file)
 
+            task: TaskType
+            row: dict[str, str]
+            for task, row in zip(self.tasks, reader):
+
+                start: datetime
+                start = datetime.strptime(row["start"], PATTERN_TIME)
+
+                with self.subTest(i=task["start"]):
+                    self.assertEqual(task["start"], start)
+
+    def test_save_task_text(self):
+        
+        with open(self.fname, "r") as file:
+            
+            reader = csv.DictReader(file)
+
+            task: TaskType
+            row: dict[str, str]
+            for task, row in zip(self.tasks, reader):
+
+                text: str = row["text"]
+
+                with self.subTest(i=task["text"]):
+                    self.assertEqual(task["text"], text)
 
 # @unittest.skip
 class TestDateTimeWindow(unittest.TestCase):
@@ -72,39 +132,44 @@ class TestDateTimeWindow(unittest.TestCase):
     def setUp(self):
         self.root = tk.Tk()
         self.win_dt = DateTimeWindow()
-        self.task = "text for dev purposes"
-        self.win_dt._init_win_dt(self.task)
         self.root.dooneevent()
         
     def tearDown(self):
         self.root.destroy()
         
     def test_calendar_obj_exists(self):
-        toplevel = next(el for el in self.root.winfo_children() if isinstance(el, tk.Toplevel)) 
-        obj_types = (type(el) for el in toplevel.winfo_children())
-        self.assertIn(Calendar, obj_types)
+        tpl: tk.Toplevel 
+        tpl = next(el for el in self.root.winfo_children() if isinstance(el, tk.Toplevel)) 
+
+        obj: Calendar
+        obj =  tpl.winfo_children()[1]    # type: ignore
+        self.assertIsInstance(obj, Calendar)
     
     def test_time_obj_exists(self):
-        toplevel = next(el for el in self.root.winfo_children() if isinstance(el, tk.Toplevel)) 
-        obj_types = (type(el) for el in toplevel.winfo_children())
-        self.assertIn(AnalogPicker, obj_types)
+        tpl: tk.Toplevel 
+        tpl = next(el for el in self.root.winfo_children() if isinstance(el, tk.Toplevel)) 
+
+        obj: Calendar
+        obj =  tpl.winfo_children()[0]    # type: ignore
+        self.assertIsInstance(obj, AnalogPicker)
         
-    def test_button_exists(self):
-        toplevel = next(el for el in self.root.winfo_children() if isinstance(el, tk.Toplevel)) 
-        obj_types = (type(el) for el in toplevel.winfo_children())
-        self.assertIn(tk.Button, obj_types)
+    def test_get_datetime_returns_valid(self):
+        obj: datetime = self.win_dt._get_datetime()
+        self.assertIsInstance(obj, datetime)
 
 
 # @unittest.skip        
-class TestTaskWindow(TestGlobal):
+class TestTaskWindow(unittest.TestCase):
 
     def setUp(self):
-        super().setUp()
         self.root = tk.Tk()
         self.task = "text for test purpose"
-        tasks = [{}]
-        scheme = "deep blue"
-        TaskWindow(tasks, self.task, scheme)    
+        tasks = []
+
+        scheme_name: Scheme_name = "deep blue"
+        scheme: Scheme = COLORS[scheme_name]
+
+        TaskWindow(self.task, tasks, scheme)    
 
     def tearDown(self):
         self.root.destroy()
@@ -134,24 +199,34 @@ class TestTaskWindow(TestGlobal):
         self.assertEqual(expected, bg)
 
     def test_remind_buttons(self):
-        # __import__('pdb').set_trace()
-        top_level = next(el for el in self.root.winfo_children() if isinstance(el, tk.Toplevel))
-        frames = [el for el in top_level.winfo_children() if isinstance(el, tk.Frame)]
-        button_texts = [el["text"] for frame in frames for el in frame.winfo_children() if isinstance(el, tk.Button)]
+        top_level: tk.Toplevel
+        top_level = next(el for el in self.root.winfo_children() 
+                if isinstance(el, tk.Toplevel))
+        
+        frames: list[tk.Frame]
+        frames = [el for el in top_level.winfo_children() 
+                if isinstance(el, tk.Frame)]
 
-        for delta in ["15 min", "1.5 hour", "1 day", "random", "choose", "end task"]:
+        button_texts: list[tk.Button]
+        button_texts = [el["text"] for frame in frames 
+                for el in frame.winfo_children() 
+                if isinstance(el, tk.Button)]
+
+        expected: list[str]
+        expected = ["15 min", "1.5 hour", "1 day", 
+                "random", "choose", "end"]
+
+        delta: str
+        for delta in expected:
             with self.subTest(i=delta):
                 msg = f"tk.Toplevel object has no button with {delta}"
                 self.assertIn(delta, button_texts, msg)
 
 
 # @unittest.skip
-class TestTaskList(TestGlobal):
+class TestTaskList(unittest.TestCase):
 
     def setUp(self):
-        super().setUp()
-
-        pattern_time = '%Y-%m-%d %H:%M:%S'
         self.tasks = [] 
 
         for  delta in (0, 0, 1):
@@ -159,7 +234,8 @@ class TestTaskList(TestGlobal):
             start = datetime.now() + timedelta(days=delta)
             self.tasks.append({"start": start, "text": text})
         
-        scheme: Scheme_name = "deep blue"
+        scheme_name: Scheme_name = "deep blue"
+        scheme: Scheme = COLORS[scheme_name]
         self.root = tk.Tk()
         self.task_list = TaskList(self.tasks, scheme)
 
@@ -170,21 +246,28 @@ class TestTaskList(TestGlobal):
         self.assertIsInstance(self.task_list, tk.Toplevel)
         
     def test_nubmer_buttons(self):
-        buttons = [i for i in self.task_list.winfo_children() if isinstance(i, tk.Button)]
-        msg = "There wrong number of buttons on TaskList obj"
+        buttons: list[tk.Button]
+        buttons = [i for i in self.task_list.winfo_children() 
+                if isinstance(i, tk.Button)]
+        msg: str = "There wrong number of buttons on TaskList obj"
         self.assertEqual(1, len(buttons), msg)
 
     def test_suited_buttons_exists(self):
-        buttons = (i for i in self.task_list.winfo_children() if isinstance(i, tk.Button))
-        expected = ("OK",)
+        buttons: tp.Iterable = (i for i in self.task_list.winfo_children()
+                if isinstance(i, tk.Button))
+        expected: tuple[str] = ("OK",)
 
+        exp: str
+        real: tk.Button
         for exp, real in zip(expected, buttons):
             with self.subTest(i=exp):
                 self.assertEqual(exp, real["text"])
 
     def test_tasks_exists(self):
         childs: tp.List[tk.Widget] = self.task_list.winfo_children()
-        frames = [el.winfo_children()[0] for el in childs if isinstance(el, tk.Frame)]
+        frames: list[tk.Frame]
+        frames = [el.winfo_children()[0] for el in childs 
+                if isinstance(el, tk.Frame)]    # type: ignore
         
         expected: int = 2
         msg: str = f"Wrong number of Frames objs (tasks), expected {expected}"
@@ -194,8 +277,9 @@ class TestTaskList(TestGlobal):
 
     def test_entries_exists(self):
         childs: tp.List[tk.Widget] = self.task_list.winfo_children()
-        entries = [el.winfo_children()[1] for el in childs if isinstance(el, tk.Frame)]
-        
+        entries: list[tk.Entry] = [el.winfo_children()[1] for el in childs 
+                if isinstance(el, tk.Frame)]    # type: ignore
+
         expected: int = 2
         msg: str = f"Wrong number of Entry objs, expected {expected}"
         existed: int = len(entries)
@@ -278,6 +362,22 @@ class TestTaskList(TestGlobal):
             with self.subTest(i=color):
                 self.assertEqual(expected_color, color)
 
+    def test_shows_notask_message(self):
+        self.task_list.destroy()    # Destroy existed TaskList with tasks
+        self.tasks: list = []     # No any task
+        
+        scheme_name: Scheme_name = "deep blue"
+        scheme: Scheme = COLORS[scheme_name]
+        self.task_list = TaskList(self.tasks, scheme)    # Create Tasklist with no task
+
+        frame: tk.Frame = self.task_list.winfo_children()[0]    # type: ignore
+
+        entry: tk.Entry = frame.winfo_children()[0]     # type: ignore
+        text: str = entry.get()
+        expected: str = "There is no any task yet"
+
+        self.assertEqual(expected, text)
+
 
 # @unittest.skip
 class TestDB(TestGlobal):
@@ -302,7 +402,6 @@ class TestDB(TestGlobal):
             self.assertEqual(expected, text, msg)
 
 
-        
 # @unittest.skip    
 class TestApp(TestGlobal):
     
@@ -335,11 +434,6 @@ class TestApp(TestGlobal):
         expected = "exit"
         self.assertEqual(expected, but_task["text"])
         
-    def test_create_task_win(self):
-        self.root._window_task()
-        childs = (type(i) for i in self.root.winfo_children())
-        self.assertIn(tk.Toplevel, childs)
-        
 
 # @unittest.skip
 class Test2App(TestGlobal):
@@ -348,11 +442,10 @@ class Test2App(TestGlobal):
     def setUp(self):
         super().setUp()
         fname = "tasks.csv"
-        pattern_time = "%Y-%m-%d %H:%M:%S"
         
         now = datetime.now()
         delta = timedelta(milliseconds=10)
-        start_str = (now + delta).strftime(pattern_time)
+        start_str = (now + delta).strftime(PATTERN_TIME)
         task = "Test in test_check_tasks"        
         
         with open(fname, "a") as file:

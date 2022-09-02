@@ -1,28 +1,29 @@
 import tkinter as tk 
-import tkinter.font
 from datetime import datetime, timedelta
 import os
 from functools import partial
-from typing import Optional
+from typing import Optional, Callable
 import random
 
 from dtwindow import DateTimeWindow 
-
-from hinting import Scheme, Scheme_name
 from colorschemes import COLORS
+from service import PATTERN_TIME
 
-class TaskWindow(DateTimeWindow):
+from hinting import Scheme, TaskListType, TaskType
 
-    def __init__(self, tasks: list[dict],  # order of arguments and hinting
-                text: Optional[str]=None, 
-                scheme_name: Scheme_name="deep blue",
-                ) -> None:
+class TaskWindow(tk.Toplevel):
 
-        self._pattern_time: str = "%Y-%m-%d %H:%M:%S"
+
+    def __init__(self, text: Optional[str], tasks: TaskListType,
+                scheme: Scheme) -> None:
+
         self._text: Optional[str] = text
-        self.scheme: Scheme = COLORS[scheme_name]
+        self.scheme: Scheme = scheme
+        self.tasks: TaskListType = tasks
 
-        self.tasks: list[dict] = tasks
+        super().__init__()
+        self.title("Task")
+        self.attributes("-topmost", 1)
 
         self._init_win_task()
         self._set_colors()
@@ -39,12 +40,8 @@ class TaskWindow(DateTimeWindow):
 
             return period
         
-        self.win_task = tk.Toplevel()
-        self.win_task.title("Task")
-        self.win_task.attributes("-topmost", 1)
-        
         font_text: tuple[str, int, str] = ("times", 13, "normal")
-        self.text_task: tk.Text = tk.Text(self.win_task, bg="light yellow", 
+        self.text_task: tk.Text = tk.Text(self, bg="light yellow", 
                                 font=font_text, height=10, width=8)
         
         if self._text:
@@ -52,40 +49,54 @@ class TaskWindow(DateTimeWindow):
             
         self.text_task.pack(fill=tk.X)
         
-        label_reminder = tk.Label(self.win_task, text="Remind me in",
+        label_reminder = tk.Label(self, text="Remind me in",
                                 height=2)
         label_reminder.pack(fill="x", anchor="center")
         
-        frame1: tk.Frame = tk.Frame(self.win_task)
+        frame1: tk.Frame = tk.Frame(self)
         frame1.pack(fill="both")
-        frame2: tk.Frame = tk.Frame(self.win_task)
+        frame2: tk.Frame = tk.Frame(self)
         frame2.pack(fill="both")
 
-        func_5sec = partial(self._count_start_time, delta_str="seconds=5")
-        tk.Button(frame1, text="5 sec", command=func_5sec).pack(side="left", fill="x", expand=True)
 
-        func_15min = partial(self._count_start_time, delta_str="minutes=15")
-        tk.Button(frame1, text="15 min", command=func_15min).pack(side="left", fill="x", expand=True)
-        
-        func_1hour = partial(self._count_start_time, delta_str="hours=1 minutes=30")
-        tk.Button(frame1, text="1.5 hour", command=func_1hour).pack(side="left", fill="x", expand=True)        
-        
-        func_random = partial(self._count_start_time, delta_str="days=1")
-        tk.Button(frame1, text="1 day", command=func_random).pack(side="left", fill="x", expand=True)        
-        
-        func_random = partial(self._count_start_time, delta_str=rand_period())
-        tk.Button(frame2, text="random", command=func_random) \
-                         .pack(side="left", fill="x", expand=True)        
+        func_15min: Callable[...,  None]
+        func_15min = partial(self._count_start_time,
+                delta_str="minutes=15")
+        tk.Button(frame1, text="15 min", command=func_15min)\
+                .pack(side="left", fill="x", expand=True)
 
-        tk.Button(frame2, text="choose", command=self._pass_to_win_dt) \
-                         .pack(side="left", fill="x", expand=True)
+        func_1hour: Callable[..., None]
+        func_1hour = partial(self._count_start_time,
+                delta_str="hours=1 minutes=30")
+        tk.Button(frame1, text="1.5 hour", command=func_1hour)\
+                .pack(side="left", fill="x", expand=True)
         
-        tk.Button(frame2, text="end task", command=self._end_task) \
-                         .pack(side="left", fill="x", expand=True)
+
+        func_1day: Callable[..., None]
+        func_1day = partial(self._count_start_time, delta_str="days=1")
+        tk.Button(frame1, text="1 day", command=func_1day)\
+                .pack(side="left", fill="x", expand=True)
+        
+
+        func_random: Callable[..., None]
+        func_random = partial(self._count_start_time,
+                delta_str=rand_period())
+        tk.Button(frame2, text="random", command=func_random)\
+                .pack(side="left", fill="x", expand=True)
+
+        tk.Button(frame2, text="choose",
+                command=self._pass_to_win_dt)\
+                .pack(side="left", fill="x", expand=True)
+
+        tk.Button(frame2, text="ok", command=self._click_ok_button)\
+                .pack(side="left", fill="x", expand=True)
+
+        tk.Button(frame2, text="end", command=self._end_task)\
+                .pack(side="left", fill="x", expand=True)
 
     def _set_colors(self) -> None:
-        self.win_task.configure(**self.scheme["main"])
-        childs: list[tk.Widget] = self.win_task.winfo_children()
+        self.configure(**self.scheme["main"])
+        childs: list[tk.Widget] = self.winfo_children()
 
         textarea: tk.Text = childs[0]    # type: ignore
         textarea.configure(**self.scheme["entry_task"])
@@ -93,7 +104,7 @@ class TaskWindow(DateTimeWindow):
         label_reminder: tk.Label = childs[1]    # type: ignore
         label_reminder.configure(**self.scheme["label_reminder"])
 
-        childs: list[tk.Widget] = self.win_task.winfo_children()
+        childs: list[tk.Widget] = self.winfo_children()
         frames: list[tk.Frame] = [frame for frame in childs 
                                   if isinstance(frame, tk.Frame)]
 
@@ -107,36 +118,59 @@ class TaskWindow(DateTimeWindow):
         """Counts delta for a start time of the task"""
         self.is_extreme = False
 
-        params = {key: int(val) for key, val in map(lambda x: x.split("="), delta_str.split(" "))}
-        delta = timedelta(**params)
-        now = datetime.now()
-        start = (now + delta)
-        text = self.text_task.get(1.0, "end")
-        self.tasks.append({"start": start, "text": text})
-        # self._save_task(start, task)   # delete this functionality
-        self.win_task.destroy()
-        
-    def _pass_to_win_dt(self):
-        """???????????????"""
-        text = self.text_task.get(1.0, "end")
-        self._init_win_dt(text)
-        self.win_task.destroy()
-        
-    def _end_task(self) -> None:
-        self.win_task.destroy()
+        params: dict[str, int]
+        params = {key: int(val) for key, val in
+                map(lambda x: x.split("="), delta_str.split(" "))}
 
-    # def __del__(self) -> None:
-    #     """If exit from the window is not through buttons,
-    #     then implement this fucntion"""
-    #
-    #     srart = datetime.now()
-    #     self.
-    #     
-    #     if self._text:
-    #         self.tasks.append({"start": start, "text": self._text})
+        delta: timedelta = timedelta(**params)
+        now: datetime = datetime.now()
+        start: datetime = (now + delta)
+        text: str = self.text_task.get(1.0, "end")
+        task: TaskType = {"start": start, "text": text}
+
+        self.tasks.append(task)
+
+        self.destroy()
+        
+    def _pass_to_win_dt(self) -> None:
+        """init DateTimeWindow to choose date and timeself.
+           It takes date and time after DateTimeWindow is closed"""
+
+        win_dt = DateTimeWindow()
+        self.wait_window(win_dt)
+
+        self._start: datetime = win_dt.start
+        self._show_choosed_time(self._start)
+
+    def _show_choosed_time(self, start: datetime) -> None:
+        """Shows the Label with selected from DateTimeWindow date and time.
+        And removes the previuos one if it exists."""
+
+        widget: tk.Widget
+        for widget in self.winfo_children():
+            if isinstance(widget, tk.Label):
+                widget.destroy()
+
+        dt: str = start.strftime(PATTERN_TIME)    # date and time
+        
+        label = tk.Label(self, text=dt)
+        label.configure(**self.scheme["label_time"])
+        label.pack(fill="x")
+
+    def _click_ok_button(self) -> None:
+        """Ater click on Button 'Ok' it saves task to tasks from main
+        and end task"""
+        text: str = self.text_task.get(1.0, "end")
+        self.task: TaskType = {"start": self._start, "text": text} 
+        self.tasks.append(self.task)
+        self._end_task()
+
+    def _end_task(self) -> None:
+        self.destroy()
+
         
 if __name__ == "__main__":
-    
+
     fname = "tasks.csv"
     if not os.path.isfile(fname):
         alarm = "It must be created tasks.csv file in the cwd with header 'start,text'"
@@ -147,5 +181,7 @@ if __name__ == "__main__":
     root.font.config(size=14, family="Times", weight="bold")    # type: ignore
     tasks = []
     text = "Test task"
-    TaskWindow(tasks, text)
+    scheme: Scheme = COLORS["deep blue"]
+    TaskWindow(tasks=tasks, text=text, scheme=scheme)
     root.mainloop()
+

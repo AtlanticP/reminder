@@ -1,4 +1,6 @@
-from typing import Literal, Union, Any
+from typing import Literal, Union, TypedDict, List, Optional
+from datetime import datetime
+
 
 Deep_blue = Literal["deep blue"]
 Light = Literal["light"]
@@ -25,4 +27,14 @@ Params = Union[Bg, Fg, ActBg, ActFg, Border, Hbg, Relief]
 
 Scheme = dict[Widgets, dict[Params, str|int]]
 Schemes = dict[Scheme_name, Scheme]
+
+class TaskType(TypedDict):
+    start: datetime
+    text: str
+
+TaskListType = List[TaskType]
+
+Start = Literal["start"]
+Text = Literal["text"]
+Fieldnames = tuple[Start, Text]
 
