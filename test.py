@@ -8,7 +8,7 @@ from tkcalendar import Calendar
 from tktimepicker import AnalogPicker
 
 from dtwindow import DateTimeWindow
-from main import App
+from app import App
 from taskwindow import TaskWindow
 from savetask import SaveTask
 from colorschemes import COLORS
@@ -384,7 +384,8 @@ class TestDB(TestGlobal):
         
     def setUp(self):
         self.fname = "tasks.csv"
-        self.root = App()
+        scheme_name: Scheme_name = "deep blue"
+        self.root = App(scheme_name)
                 
     def tearDown(self):
         self.root.destroy()
@@ -407,7 +408,8 @@ class TestApp(TestGlobal):
     
     def setUp(self):
         super().setUp()
-        self.root = App()
+        scheme_name: Scheme_name = "deep blue"
+        self.root = App(scheme_name)
         self.root.dooneevent()
     
     def tearDown(self):
@@ -453,7 +455,8 @@ class Test2App(TestGlobal):
             writer = csv.DictWriter(file, fieldnames)
             writer.writerow({"start": start_str, "task": task})                 
 
-        self.root = App()
+        scheme_name: Scheme_name = "deep blue"
+        self.root = App(scheme_name)
         self.root.fname = "tasks.csv"
         self.task = task
         self.root.dooneevent()
@@ -464,13 +467,11 @@ class Test2App(TestGlobal):
     def test_check_tasks(self):
         
         is_proper_task = False
-
         for el in self.root.winfo_children():
             if isinstance(el, tk.Toplevel):
                 
                 for subel in el.winfo_children():
                     if isinstance(subel, tk.Text):
-                        # print(subel.get(1.0, "end"))
                         if subel.get(1.0, "end") == self.task + "\n":
                             is_proper_task = True
                             break
