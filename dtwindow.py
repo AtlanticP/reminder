@@ -1,7 +1,9 @@
+import pdb
 import tkinter as tk    
 from tkcalendar import Calendar   # type: ignore
 from tktimepicker import AnalogPicker, AnalogThemes    # type: ignore
 from datetime import datetime
+from typing import Union, Literal
 
 from service import PATTERN_TIME
     
@@ -30,11 +32,23 @@ class DateTimeWindow(tk.Toplevel):
 
     def _get_datetime(self) -> datetime:
         date = str(self.widget_cal.selection_get())
-        hours: str = str(self.widget_time.hours_picker.hours)
-        minutes: str = str(self.widget_time.minutes_picker.minutes)
+        period: str = self.widget_time.period()
 
-        if len(hours) == 1:
-            hours = '0' + hours
+        if period == "PM":
+            hours_int: int = int(self.widget_time.hours_picker.hours)    # type: ignore
+
+            if hours_int == 12:
+                hours: str = "00"
+            else:
+                hours: str = str(hours_int + 12)
+
+        else:
+            hours: str = str(self.widget_time.hours_picker.hours)
+
+            if len(hours) == 1:
+                hours = '0' + hours
+
+        minutes: str = str(self.widget_time.minutes_picker.minutes)
 
         if len(minutes) == 1:
             minutes = "0" + minutes
