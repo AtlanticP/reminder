@@ -88,12 +88,16 @@ class TaskWindow(tk.Toplevel):
                 command=self._pass_to_win_dt)\
                 .pack(side="left", fill="x", expand=True)
 
-        tk.Button(frame2, text="ok", command=self._click_ok_button)\
-                .pack(side="left", fill="x", expand=True)
+        self.button_ok: tk.Button
+        self.button_ok = tk.Button(frame2, command=self._click_ok_button)
+        self.button_ok["text"] = "ok"
+        self.button_ok["state"] = "disable"
+        self.button_ok.pack(side="left", fill="x", expand=True)
+
 
         tk.Button(frame2, text="end", command=self._end_task)\
                 .pack(side="left", fill="x", expand=True)
-
+       
     def _set_colors(self) -> None:
         self.configure(**self.scheme["main"])
         childs: list[tk.Widget] = self.winfo_children()
@@ -119,7 +123,7 @@ class TaskWindow(tk.Toplevel):
         self.is_extreme = False
 
         params: dict[str, int]
-        params = {key: int(val) for key, val in
+        params = {key: int(val) for key, val in 
                 map(lambda x: x.split("="), delta_str.split(" "))}
 
         delta: timedelta = timedelta(**params)
@@ -140,6 +144,7 @@ class TaskWindow(tk.Toplevel):
         self.wait_window(win_dt)
 
         self._start: datetime = win_dt.start
+        self.button_ok["state"] = "active"
         self._show_choosed_time(self._start)
 
     def _show_choosed_time(self, start: datetime) -> None:
@@ -160,6 +165,7 @@ class TaskWindow(tk.Toplevel):
     def _click_ok_button(self) -> None:
         """Ater click on Button 'Ok' it saves task to tasks from main
         and end task"""
+        print(self.button_ok["state"])
         text: str = self.text_task.get(1.0, "end")
         self.task: TaskType = {"start": self._start, "text": text} 
         self.tasks.append(self.task)
