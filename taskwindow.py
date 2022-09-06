@@ -4,6 +4,7 @@ import os
 from functools import partial
 from typing import Optional, Callable
 import random
+from itertools import count
 
 from dtwindow import DateTimeWindow 
 from colorschemes import COLORS
@@ -12,10 +13,11 @@ from service import PATTERN_TIME
 from hinting import Scheme, TaskListType, TaskType
 
 class TaskWindow(tk.Toplevel):
+    _ids = count(0)
 
     def __init__(self, text: Optional[str], tasks: TaskListType,
                 scheme: Scheme) -> None:
-
+        self._id = next(self._ids)
         self._text: Optional[str] = text
         self.scheme: Scheme = scheme
         self.tasks: TaskListType = tasks
@@ -34,8 +36,8 @@ class TaskWindow(tk.Toplevel):
 
         width: int = self.winfo_screenwidth()
         height: int = self.winfo_screenheight()
-        x = (width - width*0.4)
-        y = (height - height/2)
+        x = (width - width*0.4 + self._id*40)
+        y = (height - height/2 + self._id*40)
 
         self.geometry("+%d+%d" % (x, y))
 
