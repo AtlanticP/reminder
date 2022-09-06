@@ -13,11 +13,24 @@ class TaskList(tk.Toplevel):
             scheme: Scheme) -> None:
 
         super().__init__()
-        self.resizable(False, False)
-        self.attributes("-topmost", 1)
         self.tasks: TaskListType = tasks
         self.scheme: Scheme = scheme
+        self._general_properties()
         self._set_widgets()
+
+    def _general_properties(self):
+        self._position_window()
+        self.resizable(False, False)
+        self.attributes("-topmost", 1)
+
+    def _position_window(self) -> None:
+
+        width: int = self.winfo_screenwidth()
+        height: int = self.winfo_screenheight()
+        x = (width - width*0.2)
+        y = (height - height/2)
+
+        self.geometry("+%d+%d" % (x, y))
 
     def _set_widgets(self) -> None:
         self._set_tasks()

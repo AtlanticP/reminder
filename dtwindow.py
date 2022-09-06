@@ -12,9 +12,18 @@ class DateTimeWindow(tk.Toplevel):
 
     def __init__(self) -> None:
         super().__init__()
+        self._position_window()
+        self._set_widget()
 
-        self.geometry("350x600")
+    def _position_window(self) -> None:
+        width: int = self.winfo_screenwidth()
+        height: int = self.winfo_screenheight()
+        x = (width - width*0.2)
+        y = (height - height/2)
 
+        self.geometry("350x600+%d+%d" % (x, y))
+
+    def _set_widget(self) -> None:
         self.widget_time = AnalogPicker(self)    
         self.widget_time.pack()
         

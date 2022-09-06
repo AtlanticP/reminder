@@ -13,7 +13,6 @@ from hinting import Scheme, TaskListType, TaskType
 
 class TaskWindow(tk.Toplevel):
 
-
     def __init__(self, text: Optional[str], tasks: TaskListType,
                 scheme: Scheme) -> None:
 
@@ -22,13 +21,25 @@ class TaskWindow(tk.Toplevel):
         self.tasks: TaskListType = tasks
 
         super().__init__()
-        self.title("Task")
-        self.attributes("-topmost", 1)
-
-        self._init_win_task()
+        self._general_properties()
+        self._set_widgets()
         self._set_colors()
 
-    def _init_win_task(self) -> None:
+    def _general_properties(self) -> None:
+        self.title("Task")
+        self.attributes("-topmost", 1)
+        self._position_window()
+
+    def _position_window(self) -> None:
+
+        width: int = self.winfo_screenwidth()
+        height: int = self.winfo_screenheight()
+        x = (width - width*0.4)
+        y = (height - height/2)
+
+        self.geometry("+%d+%d" % (x, y))
+
+    def _set_widgets(self) -> None:
         
         def rand_period() -> str:
             """"return random period for the reminder"""
