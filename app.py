@@ -57,7 +57,7 @@ class App(MoveWin, SaveTask):
         but_task.pack(**params_but)
         self.buttons.append(but_task)
         
-        but_list = tk.Button(self, text="list", 
+        but_list = tk.Button(self, text="today", 
                             command=self._get_list)
         but_list.pack(**params_but)
         self.buttons.append(but_list)

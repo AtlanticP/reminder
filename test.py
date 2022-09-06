@@ -460,7 +460,7 @@ class TestApp(TestGlobal):
 
     def test_button_list_text(self):
         but_task = self.root.winfo_children()[-2]
-        expected = "list"
+        expected = "today"
         self.assertEqual(expected, but_task["text"])
         
     def test_button_extit_text(self):
