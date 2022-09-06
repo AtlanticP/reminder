@@ -165,7 +165,6 @@ class TaskWindow(tk.Toplevel):
     def _click_ok_button(self) -> None:
         """Ater click on Button 'Ok' it saves task to tasks from main
         and end task"""
-        print(self.button_ok["state"])
         text: str = self.text_task.get(1.0, "end")
         self.task: TaskType = {"start": self._start, "text": text} 
         self.tasks.append(self.task)

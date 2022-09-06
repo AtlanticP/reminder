@@ -1,8 +1,10 @@
 import os
 import getpass
 from typing import Optional
+import sys
 
 from app import App
+from configuration import get_config, Config
 
 FILE_NAME: str = "config.cfg"    # File name of config file
 user = getpass.getuser()    # name of the current user
@@ -30,9 +32,22 @@ if not PATH_CONFIG:
 configs: dict[str, str] = {}
 
 with open(PATH_CONFIG, "r") as file:
+
     for line in file:
-        param, arg = [i.strip() for i in line.split("=")]
-        configs[param] = arg
+        try:
+            result: Config = get_config(line)
+
+            if result:
+                param: str
+                key: str
+                param, key = result
+                configs[param] = key
+
+        except ValueError:
+            msg = "Incorrect configuration file. Must be 'scheme_name = brown' or  'scheme_name = deep blue"
+            print(msg)
+            input("press <Enter> key to exit")
+            sys.exit()
 
 app = App(**configs)
 app.mainloop()

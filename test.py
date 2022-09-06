@@ -14,6 +14,7 @@ from savetask import SaveTask
 from colorschemes import COLORS
 from tasklist import TaskList
 from service import get_text, PATTERN_TIME
+from configuration import valid_line, get_config, Config
 
 import typing as tp
 from hinting import Scheme_name, Scheme, TaskListType, TaskType
@@ -40,6 +41,37 @@ class TestGlobal(unittest.TestCase):
         
         os.rename(self.fname_temp, self.fname)
         
+
+class TestConfigurations(unittest.TestCase):
+
+    def setUp(self):
+        self.lines: list[str] = ["#", "   ", "scheme_name = brown"]
+
+    def test_get_line(self):
+        expected_valid_lines: list[bool] = [False, False, True]
+
+        for line, exp in zip(self.lines, expected_valid_lines):
+
+            with self.subTest(i = exp):
+                msg: str
+                msg = f"valid_line returns wrong value"
+                result: bool = valid_line(line)
+                self.assertEqual(result, exp, msg)
+   
+    def test_get_configs(self):
+        expected_get_configs: list[Config]
+        expected_get_configs = [None, None, ("scheme_name", "brown")]
+        msg = "valid_config function returns wrong value"
+
+        for line, exp in zip(self.lines, expected_get_configs):
+
+            with self.subTest(i=exp):
+                result: Config = get_config(line)
+
+                msg: str
+                msg = f"get_config returns wrong value"
+                self.assertEqual(exp, result, msg)
+
 
 # @unittest.skip
 class TestSaveTask(TestGlobal):
