@@ -18,7 +18,7 @@ from hinting import Scheme_name, Scheme, TaskType, TaskListType
 ############# unbind today button if one instance exists
 class App(MoveWin, SaveTask):
     
-    def __init__(self, scheme_name) -> None:
+    def __init__(self, scheme_name: Scheme_name) -> None:
         super().__init__()
 
         self.tasks: TaskListType = []

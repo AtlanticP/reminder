@@ -5,6 +5,7 @@ from functools import partial
 from typing import Optional, Callable
 import random
 from itertools import count
+import sys  
 
 from dtwindow import DateTimeWindow 
 from colorschemes import COLORS
@@ -156,7 +157,12 @@ class TaskWindow(tk.Toplevel):
         self.wait_window(win_dt)
 
         self._start: datetime = win_dt.start
-        self.button_ok["state"] = "active"
+
+        try:
+            self.button_ok["state"] = "active"
+        except tk.TclError:
+            sys.exit()
+        
         self._show_choosed_time(self._start)
 
     def _show_choosed_time(self, start: datetime) -> None:
@@ -185,6 +191,12 @@ class TaskWindow(tk.Toplevel):
     def _end_task(self) -> None:
         self.destroy()
 
+    # def __del__(self):
+    #     try:
+    #         self.button_ok.destroy()
+    #     except tk.TclError:
+    #         pass
+    #
         
 if __name__ == "__main__":
 
