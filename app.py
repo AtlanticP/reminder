@@ -57,11 +57,10 @@ class App(MoveWin, SaveTask):
         but_task.pack(**params_but)
         self.buttons.append(but_task)
         
-        but_list = tk.Button(self, text="today", 
+        self.but_list = tk.Button(self, text="today", 
                             command=self._get_list)
-        but_list.pack(**params_but)
-        self.buttons.append(but_list)
-
+        self.but_list.pack(**params_but)
+        self.buttons.append(self.but_list)
 
         but_exit = tk.Button(self, text="exit", 
                             command=self._app_exit)
@@ -119,7 +118,9 @@ class App(MoveWin, SaveTask):
         self.after(1000, self._check_tasks)
 
     def _get_list(self) -> None:
-        TaskList(self.tasks, self.scheme)
+        self.but_list["state"] = "disable"
+        self.wait_window(TaskList(self.tasks, self.scheme))
+        self.but_list["state"] = "active"
 
     def _app_exit(self) -> None:
         """Get taskss from open TaskWinow, write down 

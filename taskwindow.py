@@ -33,7 +33,6 @@ class TaskWindow(tk.Toplevel):
         self._position_window()
 
     def _position_window(self) -> None:
-
         width: int = self.winfo_screenwidth()
         height: int = self.winfo_screenheight()
         x = (width - width*0.4 + self._id*40)
