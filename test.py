@@ -261,8 +261,8 @@ class TestTaskList(unittest.TestCase):
     def setUp(self):
         self.tasks = [] 
 
-        for  delta in (0, 0, 1):
-            text =  f"text {delta}"
+        for  i, delta in zip(range(3), (0, 0, 1)):
+            text =  f"text {i}, delta {delta}"
             start = datetime.now() + timedelta(days=delta)
             self.tasks.append({"start": start, "text": text})
         
@@ -326,8 +326,9 @@ class TestTaskList(unittest.TestCase):
                                             if isinstance(el, tk.Frame))
         existed_texts = (entry.get() for entry in entries)    # type: ignore
 
-        task: str = "text 0"
-        expected_texts: tp.Tuple[str, ...] = (task,)*2 
+        expected_texts: list[str]
+        expected_texts = [task["text"] for task in self.tasks
+                if task["text"][-1] == 0]
 
         for exp, real in zip(expected_texts, existed_texts):
             with self.subTest(i=exp):

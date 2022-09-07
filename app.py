@@ -15,7 +15,7 @@ from service import PATTERN_TIME, FIELDNAMES
 
 from hinting import Scheme_name, Scheme, TaskType, TaskListType 
 
-
+############# unbind today button if one instance exists
 class App(MoveWin, SaveTask):
     
     def __init__(self, scheme_name) -> None:

@@ -9,11 +9,17 @@ from service import get_text
 
 class TaskList(tk.Toplevel):
 
+    PATTERN_TIME: str = "%H:%M"
+    
     def __init__(self, tasks: TaskListType, 
             scheme: Scheme) -> None:
 
+        self._pool: list[str] = []    # Tasks that are presented int the today's list
+        self._is_tasks = True     # Toggle if any tasks exists 
+        self._no_task_text: str = "There is no any task yet"
+        self._tasks: TaskListType = tasks
+
         super().__init__()
-        self.tasks: TaskListType = tasks
         self.scheme: Scheme = scheme
         self._general_properties()
         self._set_widgets()
@@ -24,7 +30,6 @@ class TaskList(tk.Toplevel):
         self.attributes("-topmost", 1)
 
     def _position_window(self) -> None:
-
         width: int = self.winfo_screenwidth()
         height: int = self.winfo_screenheight()
         x = (width - width*0.2)
@@ -36,29 +41,60 @@ class TaskList(tk.Toplevel):
         self._set_tasks()
         but_ok = tk.Button(self, text="OK", command=self._exit)
         but_ok.configure(**self.scheme["button"])
-        but_ok.pack(fill="x")
+        but_ok.pack(side="bottom", fill="x")
+
+    def _no_tasks(self) -> None:
+        if self._is_tasks:
+            now: datetime = datetime.now()
+            time: str = now.strftime(self.PATTERN_TIME)
+            self._set_task(text=self._no_task_text, time=time)
+            self._is_tasks = False
 
     def _set_tasks(self) -> None:
-        pattern_time: str = "%H:%M"
 
-        if self.tasks:
-
+        if self._tasks:
             task: TaskType
-            for task in self.tasks:
+            for task in self._tasks:
                 now: datetime = datetime.now()
                 today: date = now.date()
                 date_: date = task["start"].date()    # date of task
 
                 if date_ == today:
-                    time: str = task["start"].strftime(pattern_time)
+                    time: str = task["start"].strftime(self.PATTERN_TIME)
                     text: str = task["text"]
-                    self._set_task(text=text, time=time)
+
+                    if text not in self._pool:
+                        self._set_task(text=text, time=time)
+                        self._pool.append(text)
+
+            self._remove_no_task_text()
 
         else:
-            text: str = "There is no any task yet"
-            now: datetime = datetime.now()
-            time: str = now.strftime(pattern_time)
-            self._set_task(text=text, time=time)
+            self._no_tasks()
+
+        self.after(1000, self._set_tasks)
+
+    def _remove_no_task_text(self):
+        childs: list[tk.Widget] = self.winfo_children()
+
+        if childs:
+            frames: list[tk.Frame]
+            frames = list(filter(        # type: ignore
+                lambda x: isinstance(x, tk.Frame), childs))
+
+            if len(frames) > 1:
+
+                frame: tk.Frame
+                for frame in frames:
+                    frame: tk.Frame = frames[0]
+                    try:
+                        text: str = frame.winfo_children()[0].get()    # type: ignore
+
+                        if text == self._no_task_text:
+                            frame.destroy()
+
+                    except tk.TclError as e:
+                        pass
 
     def _set_task(self, text: str, time: str) -> None:
         frame = tk.Frame(self, **self.scheme["frame"])
@@ -69,7 +105,8 @@ class TaskList(tk.Toplevel):
         entry_task.configure(**self.scheme["entry_task"])
         entry_task.pack(side="left")
 
-        entry_task.bind("<Button-1>", self._click_task)
+        if text != self._no_task_text:
+            entry_task.bind("<Button-1>", self._click_task)
         
         label_time = tk.Label(frame, text=time)
         label_time.configure(**self.scheme["label_time"])
@@ -77,20 +114,27 @@ class TaskList(tk.Toplevel):
 
     def _click_task(self, e: tk.Event) -> None:
         childs: list[tk.Widget] = self.winfo_children()
-        TaskWindow(tasks=self.tasks, text=e.widget.get(),
+        TaskWindow(tasks=self._tasks, text=e.widget.get(),
                 scheme=self.scheme)
 
-        # find frame to delete
-        for frame in childs[:-1]:
+        frames: list[tk.Frame]
+        frames = list(filter(     # type: ignore
+            lambda x: isinstance(x, tk.Frame), childs))
 
+        # find frame to delete
+        for frame in frames:
             entry: tk.Entry = frame.winfo_children()[0]    # type: ignore
             text: str = entry.get()
 
-            got_text: str = e.widget.get()
-            
-            if got_text == text:
+            expected: str = e.widget.get()
+
+            if expected == text:
                 frame.destroy()
                 break
+
+        if len(childs) == 2:
+            self._is_tasks = True
+            self._no_tasks()
 
     def _exit(self):
         self.destroy()
@@ -103,7 +147,7 @@ if __name__ == "__main__":
     
     tasks: TaskListType = []
 
-    for _ in range(10):
+    for _ in range(2):
         text = get_text()
         
         task: TaskType = {
@@ -112,6 +156,8 @@ if __name__ == "__main__":
             }
 
         tasks.append(task)
+
+    # tasks: TaskListType = []
 
     root = tk.Tk()
     scheme: Scheme = COLORS["deep blue"]
