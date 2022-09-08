@@ -1,39 +1,33 @@
 import os
-import getpass
-from typing import Optional
 import sys
 
 from app import App
 from configuration import get_config, Config
 
 
-FILE_NAME: str = "config.cfg"    # File name of config file
-user = getpass.getuser()    # name of the current user
-DIRS_CONFIG: list[str] = [     # Directories where config file can be located
-        f"/home/{user}/.config/reminder",
-        os.getcwd()
-        ]
-PATH_CONFIG: Optional[str] = None
+CURRENT_DIRECTORY: str = os.path.dirname(os.path.realpath(__file__))
 
-dir: str
-for dir_ in DIRS_CONFIG:
-    PATH_ = os.path.join(dir_, FILE_NAME)
-    if PATH_:
-        PATH_CONFIG = PATH_
-        break
+FILE_TASKS: str = "tasks.csv"   # File name of task file
+PATH_TASKS: str = os.path.join(CURRENT_DIRECTORY, FILE_TASKS)    # default path to file where tasks are located
+
+FILE_CONFIG: str = "config.cfg"    # File name of config file
+PATH_CONFIG: str = os.path.join(CURRENT_DIRECTORY, FILE_CONFIG) 
 
 # If there is no config file it is created with default values
-if not PATH_CONFIG:
-    PATH_CONFIG = os.path.join(os.getcwd(), FILE_NAME)
-
+if not os.path.isfile(PATH_CONFIG):
     with open(PATH_CONFIG, "w") as file:
-        writer = file.write("scheme_name = brown")
+        text = "# path to file where tasks are located\n"
+        file.write(text)
+        file.write(f"path_tasks = {PATH_TASKS}\n")
+        file.write("# scheme_name = deep blue\n")
+        file.write("scheme_name = brown\n")
 
 # Read config file
 configs: dict[str, str] = {}
 
 with open(PATH_CONFIG, "r") as file:
 
+    line: str
     for line in file:
         try:
             result: Config = get_config(line)
@@ -45,10 +39,11 @@ with open(PATH_CONFIG, "r") as file:
                 configs[param] = key
 
         except ValueError:
-            msg = "Incorrect configuration file. Must be 'scheme_name = brown' or  'scheme_name = deep blue"
+            msg = "Incorrect configuration file. Must be 'path_tasks = home/atl/Apps/reminder/tasks.csv' or 'scheme_name = deep blue"
             print(msg)
             input("press <Enter> key to exit")
             sys.exit()
+
 
 app = App(**configs)    # type: ignore
 app.mainloop()

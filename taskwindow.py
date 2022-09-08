@@ -130,6 +130,7 @@ class TaskWindow(tk.Toplevel):
             
     def _count_start_time(self, delta_str: str) -> None:
         """Counts delta for a start time of the task"""
+
         self.is_extreme = False
 
         params: dict[str, int]
@@ -139,7 +140,7 @@ class TaskWindow(tk.Toplevel):
         delta: timedelta = timedelta(**params)
         now: datetime = datetime.now()
         start: datetime = (now + delta)
-        text: str = self.text_task.get(1.0, "end")
+        text: str = self.text_task.get(1.0, "end")[:-1]    # Entry object add Return Cariage
         task: TaskType = {"start": start, "text": text}
 
         self.tasks.append(task)
@@ -180,7 +181,7 @@ class TaskWindow(tk.Toplevel):
     def _click_ok_button(self) -> None:
         """Ater click on Button 'Ok' it saves task to tasks from main
         and end task"""
-        text: str = self.text_task.get(1.0, "end")
+        text: str = self.text_task.get(1.0, "end")[:-1]    # Entry object add Return Cariage
         self.task: TaskType = {"start": self._start, "text": text} 
         self.tasks.append(self.task)
         self._end_task()

@@ -13,18 +13,20 @@ from colorschemes import COLORS
 from tasklist import TaskList
 from savetask import SaveTask
 from service import PATTERN_TIME, FIELDNAMES
+from filemanager import FileManager
 
 from hinting import Scheme_name, Scheme, TaskType, TaskListType 
 
 
 class App(MoveWin, SaveTask):
     
-    def __init__(self, scheme_name: Scheme_name) -> None:
+    def __init__(self, scheme_name: Scheme_name,
+            path_tasks: str) -> None:
         super().__init__()
 
         self.tasks: TaskListType = []
 
-        self.fname: str = "tasks.csv" # file where tasks are stored
+        self.fname: str = path_tasks    # file where tasks are located
         if not os.path.isfile(self.fname):
             with open(self.fname, "w") as file:
                 writer = csv.DictWriter(file, fieldnames=FIELDNAMES)
@@ -147,6 +149,8 @@ class App(MoveWin, SaveTask):
 
 
 if __name__ == "__main__":        
-    root = App("deep blue")
-    root.mainloop()
+    fname = "taskstemp.csv"
+    with FileManager(fname):
+        root = App("deep blue", fname)
+        root.mainloop()
     

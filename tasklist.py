@@ -15,7 +15,7 @@ class TaskList(tk.Toplevel):
             scheme: Scheme) -> None:
 
         self._pool: list[str] = []    # Tasks that are presented int the today's list
-        self._is_tasks = True     # Toggle if any tasks exists 
+        self._is_tasks: bool = True     # Toggle if any tasks exists 
         self._no_task_text: str = "There is no any task yet"
         self._tasks: TaskListType = tasks
 
@@ -23,6 +23,7 @@ class TaskList(tk.Toplevel):
         self.scheme: Scheme = scheme
         self._general_properties()
         self._set_widgets()
+        self._set_tasks()
 
     def _general_properties(self):
         self._position_window()
@@ -38,7 +39,6 @@ class TaskList(tk.Toplevel):
         self.geometry("+%d+%d" % (x, y))
 
     def _set_widgets(self) -> None:
-        self._set_tasks()
         but_ok = tk.Button(self, text="OK", command=self._exit)
         but_ok.configure(**self.scheme["button"])
         but_ok.pack(side="bottom", fill="x")
@@ -52,9 +52,11 @@ class TaskList(tk.Toplevel):
 
     def _set_tasks(self) -> None:
 
+        # __import__('pdb').set_trace()
+
         if self._tasks:
             task: TaskType
-            for task in self._tasks:
+            for task in sorted(self._tasks, key=lambda x: x["start"]):
                 now: datetime = datetime.now()
                 today: date = now.date()
                 date_: date = task["start"].date()    # date of task
@@ -69,10 +71,10 @@ class TaskList(tk.Toplevel):
 
             self._remove_no_task_text()
 
-        else:
+        if not self._pool:
             self._no_tasks()
 
-        self.after(1000, self._set_tasks)
+        self.after(1500, self._set_tasks)
 
     def _remove_no_task_text(self):
         childs: list[tk.Widget] = self.winfo_children()
@@ -113,6 +115,8 @@ class TaskList(tk.Toplevel):
         label_time.pack(side="left")
 
     def _click_task(self, e: tk.Event) -> None:
+        """ Removes task from TaskList, from self._task and from self._pool"""
+
         childs: list[tk.Widget] = self.winfo_children()
         TaskWindow(tasks=self._tasks, text=e.widget.get(),
                 scheme=self.scheme)
@@ -121,17 +125,27 @@ class TaskList(tk.Toplevel):
         frames = list(filter(     # type: ignore
             lambda x: isinstance(x, tk.Frame), childs))
 
+        expected: str = e.widget.get()   # text that must be removed from list "tasks" and from TaskList object
+
         # find frame to delete
         for frame in frames:
             entry: tk.Entry = frame.winfo_children()[0]    # type: ignore
             text: str = entry.get()
 
-            expected: str = e.widget.get()
-
             if expected == text:
                 frame.destroy()
                 break
 
+        # remove from tasks
+        task: TaskType
+        for task in self._tasks:    # It needs to save exactly the same link to list object
+            if task["text"] == expected:
+                self._tasks.remove(task)
+
+        # remove proper text from pool
+        self._pool.remove(expected)
+
+        # if no any task, a suitable message must be in TaskList
         if len(childs) == 2:
             self._is_tasks = True
             self._no_tasks()
