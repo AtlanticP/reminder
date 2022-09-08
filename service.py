@@ -1,6 +1,11 @@
+"""
+Here are some constants and a subsudiary function 
+not connected logically with each other.
+"""
 import string 
 import random
 from hinting import Fieldnames
+
 
 PATTERN_TIME = '%Y-%m-%d %H:%M:%S'
 FIELDNAMES: Fieldnames = ("start", "text")

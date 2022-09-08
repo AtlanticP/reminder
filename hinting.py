@@ -32,6 +32,7 @@ class TaskType(TypedDict):
     start: datetime
     text: str
 
+
 TaskListType = List[TaskType]
 
 Start = Literal["start"]

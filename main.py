@@ -6,6 +6,7 @@ import sys
 from app import App
 from configuration import get_config, Config
 
+
 FILE_NAME: str = "config.cfg"    # File name of config file
 user = getpass.getuser()    # name of the current user
 DIRS_CONFIG: list[str] = [     # Directories where config file can be located
@@ -49,6 +50,6 @@ with open(PATH_CONFIG, "r") as file:
             input("press <Enter> key to exit")
             sys.exit()
 
-app = App(**configs)
+app = App(**configs)    # type: ignore
 app.mainloop()
 

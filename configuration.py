@@ -5,6 +5,7 @@ in $HOME/.config/reminder or in the current directories.
 
 from typing import Iterable, Optional
 
+
 Config = Optional[Iterable[str]]
 
 def valid_line(line: str) -> bool:

@@ -1,10 +1,11 @@
 import tkinter as tk
-import tkinter.font    # type: ingore
+import tkinter.font
 import time
 import os
 import csv
 from datetime import datetime 
 from typing import Union
+import sys
 
 from movewin import MoveWin
 from taskwindow import TaskWindow
@@ -15,7 +16,7 @@ from service import PATTERN_TIME, FIELDNAMES
 
 from hinting import Scheme_name, Scheme, TaskType, TaskListType 
 
-############# unbind today button if one instance exists
+
 class App(MoveWin, SaveTask):
     
     def __init__(self, scheme_name: Scheme_name) -> None:
@@ -120,7 +121,10 @@ class App(MoveWin, SaveTask):
     def _get_list(self) -> None:
         self.but_list["state"] = "disable"
         self.wait_window(TaskList(self.tasks, self.scheme))
-        self.but_list["state"] = "active"
+        try:
+            self.but_list["state"] = "active"
+        except tk.TclError:
+            sys.exit
 
     def _app_exit(self) -> None:
         """Get taskss from open TaskWinow, write down 
@@ -144,9 +148,5 @@ class App(MoveWin, SaveTask):
 
 if __name__ == "__main__":        
     root = App("deep blue")
-    PATH_ICON = "media/reminder.png"
-    # PATH_ICON = "icon.ico"
-    photo = tk.PhotoImage(file=PATH_ICON)
-    root.iconphoto(False, photo)
     root.mainloop()
     

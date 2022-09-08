@@ -32,3 +32,4 @@ if __name__ == "__main__":
             assert header == reader, f"FileManager write incorrect header"
 
     assert not os.path.isfile(fname), f"FileManager does not remove {fname}"
+

@@ -71,7 +71,6 @@ class TaskWindow(tk.Toplevel):
         frame2: tk.Frame = tk.Frame(self)
         frame2.pack(fill="both")
 
-
         func_15min: Callable[...,  None]
         func_15min = partial(self._count_start_time,
                 delta_str="minutes=15")
@@ -90,7 +89,6 @@ class TaskWindow(tk.Toplevel):
         tk.Button(frame1, text="1 day", command=func_1day)\
                 .pack(side="left", fill="x", expand=True)
         
-
         func_random: Callable[..., None]
         func_random = partial(self._count_start_time,
                 delta_str=rand_period())
@@ -106,7 +104,6 @@ class TaskWindow(tk.Toplevel):
         self.button_ok["text"] = "ok"
         self.button_ok["state"] = "disable"
         self.button_ok.pack(side="left", fill="x", expand=True)
-
 
         tk.Button(frame2, text="end", command=self._end_task)\
                 .pack(side="left", fill="x", expand=True)
@@ -191,12 +188,6 @@ class TaskWindow(tk.Toplevel):
     def _end_task(self) -> None:
         self.destroy()
 
-    # def __del__(self):
-    #     try:
-    #         self.button_ok.destroy()
-    #     except tk.TclError:
-    #         pass
-    #
         
 if __name__ == "__main__":
 

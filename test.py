@@ -19,6 +19,7 @@ from configuration import valid_line, get_config, Config
 import typing as tp
 from hinting import Scheme_name, Scheme, TaskListType, TaskType
 
+
 # @unittest.skip
 class TestGlobal(unittest.TestCase):
     
@@ -157,6 +158,7 @@ class TestSaveTask(TestGlobal):
 
                 with self.subTest(i=task["text"]):
                     self.assertEqual(task["text"], text)
+
 
 # @unittest.skip
 class TestDateTimeWindow(unittest.TestCase):
