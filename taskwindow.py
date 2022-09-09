@@ -95,9 +95,10 @@ class TaskWindow(tk.Toplevel):
         tk.Button(frame2, text="random", command=func_random)\
                 .pack(side="left", fill="x", expand=True)
 
-        tk.Button(frame2, text="choose",
-                command=self._pass_to_win_dt)\
-                .pack(side="left", fill="x", expand=True)
+        self.button_choose: tk.Button
+        self.button_choose = tk.Button(frame2, command=self._pass_to_win_dt)
+        self.button_choose["text"] = "choose"
+        self.button_choose.pack(side="left", fill="x", expand=True)
 
         self.button_ok: tk.Button
         self.button_ok = tk.Button(frame2, command=self._click_ok_button)
@@ -151,6 +152,7 @@ class TaskWindow(tk.Toplevel):
         """init DateTimeWindow to choose date and timeself.
            It takes date and time after DateTimeWindow is closed"""
 
+        self.button_choose["state"] = "disabled"
         win_dt = DateTimeWindow()
         self.wait_window(win_dt)
 
@@ -158,6 +160,7 @@ class TaskWindow(tk.Toplevel):
 
         try:
             self.button_ok["state"] = "active"
+            self.button_choose["state"] = "active"
         except tk.TclError:
             sys.exit()
         

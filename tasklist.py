@@ -17,6 +17,7 @@ class TaskList(tk.Toplevel):
         self._pool: set[str] = set()    # Tasks that are presented int the today's list
         self._no_task_text: str = "There is no any task yet"
         self._tasks: TaskListType = tasks
+        self._toggle: bool = True     # if True show self._no_task_text
 
         super().__init__()
         self.scheme: Scheme = scheme
@@ -47,72 +48,7 @@ class TaskList(tk.Toplevel):
         now: datetime = datetime.now()
         time: str = now.strftime(self.PATTERN_TIME)
         self._set_task(text=self._no_task_text, time=time)
-        self._pool.add(self._no_task_text)
-
-    def _remove_task(self, to_remove: str) -> None:
-        """Remove a task with a specifiec text"""
-        childs: list[tk.Widget] = self.winfo_children()
-
-        frames: list[tk.Frame]
-        frames = list(filter(     # type: ignore
-            lambda x: isinstance(x, tk.Frame), childs))
-
-        # find frame to delete
-        for frame in frames:
-            entry: tk.Entry = frame.winfo_children()[0]    # type: ignore
-            text: str = entry.get()
-
-            if to_remove == text:
-                frame.destroy()
-                break
-
-    def _handle_task(self, task: TaskType) -> None:
-        now: datetime = datetime.now()
-        today: date = now.date()
-        date_: date = task["start"].date()    # date of task
-
-        # check the task
-        if date_ == today:
-            time: str = task["start"].strftime(self.PATTERN_TIME)
-            text: str = task["text"]
-
-            if text not in self._pool:
-                self._set_task(text=text, time=time)
-                self._pool.add(text)
-
-    def _handle_pool(self) -> None:
-        """If threre are texts in the pool that are not in tasks
-        they must be removed from the pool and the tasks 
-        with suitable texts ust be removed from TaskList"""
-
-        # find text of tasks that needs to be removed
-        tasks_text: set[str]    # texts of all tasks
-        tasks_text = set(map(lambda task: task["text"], self._tasks))
-        to_remove: set[str] = self._pool - tasks_text  # text of tasks that needs to be removed
-
-        # remove frames with texts that needs to be removed
-        text: str
-        for text in to_remove:
-            self._remove_task(text)
-
-        # remove tasks
-        self._pool = self._pool - to_remove
-        if not self._pool:
-            # self._show_empty = True
-            self._no_tasks()
-       
-    def _set_tasks(self) -> None:
-
-        if self._tasks:
-
-            task: TaskType
-            for task in sorted(self._tasks, key=lambda x: x["start"]):
-                self._handle_task(task)
-
-            self._remove_no_task_text()
-
-        self._handle_pool()
-        self.after(1000, self._set_tasks)
+        self._toggle = False
 
     def _remove_no_task_text(self):
         """If there any task in tasks, it removes self._no_task_text"""
@@ -137,6 +73,73 @@ class TaskList(tk.Toplevel):
                     except tk.TclError as e:
                         pass
 
+    def _remove_task(self, to_remove: str) -> None:
+        """Remove a task with a specifiec text"""
+        childs: list[tk.Widget] = self.winfo_children()
+
+        frames: list[tk.Frame]
+        frames = list(filter(     # type: ignore
+            lambda x: isinstance(x, tk.Frame), childs))
+
+        # find frame to delete
+        for frame in frames:
+            entry: tk.Entry = frame.winfo_children()[0]    # type: ignore
+            text: str = entry.get()
+
+            if to_remove == text:
+                frame.destroy()
+                break
+
+    def _handle_pool(self) -> None:
+        """If threre are texts in the pool that are not in tasks
+        they must be removed from the pool and the tasks 
+        with suitable texts ust be removed from TaskList"""
+
+        # find text of tasks that needs to be removed
+        tasks_text: set[str]    # texts of all tasks
+        tasks_text = set(map(lambda task: task["text"], self._tasks))
+        to_remove: set[str] = self._pool - tasks_text  # text of tasks that needs to be removed
+
+        # remove frames with texts that needs to be removed
+        text: str
+        for text in to_remove:
+            self._remove_task(text)
+
+        # remove tasks
+        self._pool = self._pool - to_remove
+        
+        if not self._pool and self._toggle:
+            self._no_tasks()
+            self._toggle = False
+        elif self._pool:
+            self._remove_no_task_text()
+ 
+    def _set_tasks(self) -> None:
+
+        if self._tasks:
+            task: TaskType
+            for task in sorted(self._tasks, key=lambda x: x["start"]):
+                self._handle_task(task)
+            self._toggle = True
+
+        self._handle_pool()
+        self.after(1000, self._set_tasks)
+
+    def _handle_task(self, task: TaskType) -> None:
+        now: datetime = datetime.now()
+        today: date = now.date()
+        date_: date = task["start"].date()    # date of task
+
+        # check the task
+        if date_ == today:
+            time: str = task["start"].strftime(self.PATTERN_TIME)
+            text: str = task["text"]
+
+            if text not in self._pool:
+                self._set_task(text=text, time=time)
+                if text != self._remove_no_task_text:
+                    self._pool.add(text)
+
     def _set_task(self, text: str, time: str) -> None:
         frame = tk.Frame(self, **self.scheme["frame"])
         frame.pack()
@@ -148,7 +151,7 @@ class TaskList(tk.Toplevel):
 
         if text != self._no_task_text:
             entry_task.bind("<Button-1>", self._click_task)
-        
+
         label_time = tk.Label(frame, text=time)
         label_time.configure(**self.scheme["label_time"])
         label_time.pack(side="left")
