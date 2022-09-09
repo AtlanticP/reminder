@@ -24,7 +24,7 @@ class App(MoveWin, SaveTask):
             path_tasks: str) -> None:
         super().__init__()
 
-        self.tasks: TaskListType = []
+        self._tasks: TaskListType = []
 
         self.fname: str = path_tasks    # file where tasks are located
         if not os.path.isfile(self.fname):
@@ -85,7 +85,7 @@ class App(MoveWin, SaveTask):
         self.after(1000, self._current_time)
 
     def _window_task(self) -> None:
-        TaskWindow(text=None, tasks=self.tasks,
+        TaskWindow(text=None, tasks=self._tasks,
                     scheme=self.scheme)
             
     def _load_tasks(self) -> None:
@@ -102,27 +102,29 @@ class App(MoveWin, SaveTask):
                 start = datetime.strptime(row["start"], PATTERN_TIME)
 
                 task: TaskType  = {"start": start, "text": row["text"]}
-                self.tasks.append(task)
+                self._tasks.append(task)
 
         self._check_tasks()
                 
     def _check_tasks(self) -> None:
         """Pop task window if there is a time for a task."""
 
-        for i, el in enumerate(self.tasks):
+        for el in self._tasks:
 
             now: datetime = datetime.now()
 
             if now > el["start"]:
 
-                TaskWindow(el["text"], self.tasks, scheme=self.scheme)
-                self.tasks.pop(i)
-        
+                text: str = el["text"]
+                self._tasks.remove(el)
+
+                TaskWindow(text, self._tasks, scheme=self.scheme)
+
         self.after(1000, self._check_tasks)
 
     def _get_list(self) -> None:
         self.but_list["state"] = "disable"
-        self.wait_window(TaskList(self.tasks, self.scheme))
+        self.wait_window(TaskList(self._tasks, self.scheme))
         try:
             self.but_list["state"] = "active"
         except tk.TclError:
@@ -142,9 +144,9 @@ class App(MoveWin, SaveTask):
                 text: str = textarea.get(1.0, "end")
 
                 task: TaskType = {"start": start, "text": text}
-                self.tasks.append(task)
+                self._tasks.append(task)
         
-        self._save_tasks(self.tasks, self.fname)
+        self._save_tasks(self._tasks, self.fname)
         self.destroy()
 
 
