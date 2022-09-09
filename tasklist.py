@@ -6,6 +6,8 @@ from hinting import  Scheme, TaskListType, TaskType
 from taskwindow import TaskWindow
 from service import get_text
 
+from datetime import datetime, timedelta  # !!!!!!!!!!!!!!!!!!!!!!!!!
+
 
 class TaskList(tk.Toplevel):
 
@@ -17,7 +19,7 @@ class TaskList(tk.Toplevel):
         self._pool: set[str] = set()    # Tasks that are presented int the today's list
         self._no_task_text: str = "There is no any task yet"
         self._tasks: TaskListType = tasks
-        self._toggle: bool = True     # if True show self._no_task_text
+        self._toggle: bool = True     # if True set self._no_task_text
 
         super().__init__()
         self.scheme: Scheme = scheme
@@ -107,20 +109,16 @@ class TaskList(tk.Toplevel):
 
         # remove tasks
         self._pool = self._pool - to_remove
-        
         if not self._pool and self._toggle:
             self._no_tasks()
-            self._toggle = False
         elif self._pool:
             self._remove_no_task_text()
  
     def _set_tasks(self) -> None:
-
         if self._tasks:
             task: TaskType
             for task in sorted(self._tasks, key=lambda x: x["start"]):
                 self._handle_task(task)
-            self._toggle = True
 
         self._handle_pool()
         self.after(1000, self._set_tasks)
@@ -139,6 +137,8 @@ class TaskList(tk.Toplevel):
                 self._set_task(text=text, time=time)
                 if text != self._remove_no_task_text:
                     self._pool.add(text)
+
+            self._toggle = True
 
     def _set_task(self, text: str, time: str) -> None:
         frame = tk.Frame(self, **self.scheme["frame"])
@@ -184,7 +184,7 @@ class TaskList(tk.Toplevel):
             if task["text"] == expected:
                 self._tasks.remove(task)
 
-        # remove proper text from pool
+        # # remove proper text from pool
         self._pool.remove(expected)
 
         # if no any task, an appropriate messge must be in TaskList
@@ -202,7 +202,7 @@ if __name__ == "__main__":
     
     tasks: TaskListType = []
 
-    for _ in range(2):
+    for _ in range(1):
         text = get_text()
         
         task: TaskType = {

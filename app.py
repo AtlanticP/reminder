@@ -141,7 +141,7 @@ class App(MoveWin, SaveTask):
 
             if isinstance(el, TaskWindow):
                 textarea: tk.Text = el.winfo_children()[0]     # type: ignore
-                text: str = textarea.get(1.0, "end")
+                text: str = textarea.get(1.0, "end").rstrip("\n")
 
                 task: TaskType = {"start": start, "text": text}
                 self._tasks.append(task)
