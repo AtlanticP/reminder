@@ -15,7 +15,6 @@ class TaskList(tk.Toplevel):
             scheme: Scheme) -> None:
 
         self._pool: set[str] = set()    # Tasks that are presented int the today's list
-        self._show_empty: bool = False     # Toggle if any tasks exists 
         self._no_task_text: str = "There is no any task yet"
         self._tasks: TaskListType = tasks
 
@@ -45,12 +44,10 @@ class TaskList(tk.Toplevel):
 
     def _no_tasks(self) -> None:
         """If there is no task, it displays the appropriate message"""
-        if self._show_empty:
-            now: datetime = datetime.now()
-            time: str = now.strftime(self.PATTERN_TIME)
-            self._set_task(text=self._no_task_text, time=time)
-            self._pool.add(self._no_task_text)
-            self._show_empty = False
+        now: datetime = datetime.now()
+        time: str = now.strftime(self.PATTERN_TIME)
+        self._set_task(text=self._no_task_text, time=time)
+        self._pool.add(self._no_task_text)
 
     def _remove_task(self, to_remove: str) -> None:
         """Remove a task with a specifiec text"""
@@ -60,7 +57,6 @@ class TaskList(tk.Toplevel):
         frames = list(filter(     # type: ignore
             lambda x: isinstance(x, tk.Frame), childs))
 
-
         # find frame to delete
         for frame in frames:
             entry: tk.Entry = frame.winfo_children()[0]    # type: ignore
@@ -69,11 +65,27 @@ class TaskList(tk.Toplevel):
             if to_remove == text:
                 frame.destroy()
                 break
-       
 
-    def _set_tasks(self) -> None:
+    def _handle_task(self, task: TaskType) -> None:
+        now: datetime = datetime.now()
+        today: date = now.date()
+        date_: date = task["start"].date()    # date of task
+
+        # check the task
+        if date_ == today:
+            time: str = task["start"].strftime(self.PATTERN_TIME)
+            text: str = task["text"]
+
+            if text not in self._pool:
+                self._set_task(text=text, time=time)
+                self._pool.add(text)
+
+    def _handle_pool(self) -> None:
+        """If threre are texts in the pool that are not in tasks
+        they must be removed from the pool and the tasks 
+        with suitable texts ust be removed from TaskList"""
+
         # find text of tasks that needs to be removed
-        self._no_tasks()
         tasks_text: set[str]    # texts of all tasks
         tasks_text = set(map(lambda task: task["text"], self._tasks))
         to_remove: set[str] = self._pool - tasks_text  # text of tasks that needs to be removed
@@ -83,38 +95,27 @@ class TaskList(tk.Toplevel):
         for text in to_remove:
             self._remove_task(text)
 
+        # remove tasks
         self._pool = self._pool - to_remove
-        if not self._pool:
-            self._show_empty = True
-        # if to_remove:
-        # __import__('pdb').set_trace()
-
-        # print(len(self._tasks), len(self._pool))
-
-        if self._tasks:
-            task: TaskType
-            for task in sorted(self._tasks, key=lambda x: x["start"]):
-                now: datetime = datetime.now()
-                today: date = now.date()
-                date_: date = task["start"].date()    # date of task
-
-                if date_ == today:
-                    time: str = task["start"].strftime(self.PATTERN_TIME)
-                    text: str = task["text"]
-
-                    if text not in self._pool:
-                        self._set_task(text=text, time=time)
-                        self._pool.add(text)
-
-            self._remove_no_task_text()
-
         if not self._pool:
             # self._show_empty = True
             self._no_tasks()
+       
+    def _set_tasks(self) -> None:
 
-        self.after(1500, self._set_tasks)
+        if self._tasks:
+
+            task: TaskType
+            for task in sorted(self._tasks, key=lambda x: x["start"]):
+                self._handle_task(task)
+
+            self._remove_no_task_text()
+
+        self._handle_pool()
+        self.after(1000, self._set_tasks)
 
     def _remove_no_task_text(self):
+        """If there any task in tasks, it removes self._no_task_text"""
         childs: list[tk.Widget] = self.winfo_children()
 
         if childs:
@@ -169,7 +170,6 @@ class TaskList(tk.Toplevel):
         for frame in frames:
             entry: tk.Entry = frame.winfo_children()[0]    # type: ignore
             text: str = entry.get()
-            # __import__('pdb').set_trace()
 
             if expected == text:
                 frame.destroy()
@@ -184,9 +184,8 @@ class TaskList(tk.Toplevel):
         # remove proper text from pool
         self._pool.remove(expected)
 
-        # if no any task, a suitable message must be in TaskList
+        # if no any task, an appropriate messge must be in TaskList
         if len(childs) == 2:
-            # self._show_empty = False
             self._no_tasks()
 
     def _exit(self):

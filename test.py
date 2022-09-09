@@ -20,6 +20,12 @@ import typing as tp
 from hinting import Scheme_name, Scheme, TaskListType, TaskType
 
 
+
+CURRENT_DIRECTORY: str = os.path.dirname(os.path.realpath(__file__))
+
+FILE_TASKS: str = "tasks.csv"   # File name of task file
+PATH_TASKS: str = os.path.join(CURRENT_DIRECTORY, FILE_TASKS)    # default path to file where tasks are located
+
 # @unittest.skip
 class TestGlobal(unittest.TestCase):
     
@@ -400,13 +406,14 @@ class TestTaskList(unittest.TestCase):
     def test_shows_notask_message(self):
         self.task_list.destroy()    # Destroy existed TaskList with tasks
         self.tasks: list = []     # No any task
-        
         scheme_name: Scheme_name = "deep blue"
         scheme: Scheme = COLORS[scheme_name]
         self.task_list = TaskList(self.tasks, scheme)    # Create Tasklist with no task
 
-        frame: tk.Frame = self.task_list.winfo_children()[0]    # type: ignore
-
+        childs: list[tk.Widget] = self.task_list.winfo_children()
+        frame: tk.Frame
+        frame = next(widget for widget in childs 
+                if isinstance(widget, tk.Frame))
         entry: tk.Entry = frame.winfo_children()[0]     # type: ignore
         text: str = entry.get()
         expected: str = "There is no any task yet"
@@ -420,7 +427,8 @@ class TestDB(TestGlobal):
     def setUp(self):
         self.fname = "tasks.csv"
         scheme_name: Scheme_name = "deep blue"
-        self.root = App(scheme_name)
+        self.root = App(scheme_name=scheme_name,
+                        path_tasks=PATH_TASKS)
                 
     def tearDown(self):
         self.root.destroy()
@@ -444,7 +452,8 @@ class TestApp(TestGlobal):
     def setUp(self):
         super().setUp()
         scheme_name: Scheme_name = "deep blue"
-        self.root = App(scheme_name)
+        self.root = App(scheme_name=scheme_name,
+                        path_tasks=PATH_TASKS)
         self.root.dooneevent()
     
     def tearDown(self):
@@ -491,7 +500,8 @@ class Test2App(TestGlobal):
             writer.writerow({"start": start_str, "task": task})                 
 
         scheme_name: Scheme_name = "deep blue"
-        self.root = App(scheme_name)
+        self.root = App(scheme_name=scheme_name,
+                        path_tasks=PATH_TASKS)
         self.root.fname = "tasks.csv"
         self.task = task
         self.root.dooneevent()
