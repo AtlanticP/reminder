@@ -1,7 +1,7 @@
 # Simple Reminder
 Простая "open source" напоминалка для различных задач. Мною используется в основом в качестве повторения пройденного материала.
 ### Demo
-![Demo](media/reminder.gif)
+<img src="media/reminder.gif" width=420 height=300>
 
 ### Установка
 ~~~
