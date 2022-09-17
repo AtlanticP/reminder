@@ -3,9 +3,8 @@ import tkinter as tk
 from tkcalendar import Calendar   # type: ignore
 from tktimepicker import AnalogPicker, AnalogThemes    # type: ignore
 from datetime import datetime
-from typing import Union, Literal
 
-from service import PATTERN_TIME
+from utils import PATTERN_TIME
     
 
 class DateTimeWindow(tk.Toplevel):

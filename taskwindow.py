@@ -9,7 +9,7 @@ import sys
 
 from dtwindow import DateTimeWindow 
 from colorschemes import COLORS
-from service import PATTERN_TIME
+from utils import PATTERN_TIME
 
 from hinting import Scheme, TaskListType, TaskType
 

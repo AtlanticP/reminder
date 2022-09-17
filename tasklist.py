@@ -4,7 +4,7 @@ from datetime import datetime, date
 from colorschemes import COLORS
 from hinting import  Scheme, TaskListType, TaskType
 from taskwindow import TaskWindow
-from service import get_text
+from utils import get_text
 
 from datetime import datetime, timedelta  # !!!!!!!!!!!!!!!!!!!!!!!!!
 

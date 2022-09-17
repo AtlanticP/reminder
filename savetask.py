@@ -1,6 +1,6 @@
 import csv
 
-from service import PATTERN_TIME, FIELDNAMES
+from utils import PATTERN_TIME, FIELDNAMES
 from hinting import TaskListType, TaskType
 
 

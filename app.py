@@ -12,12 +12,12 @@ from taskwindow import TaskWindow
 from colorschemes import COLORS
 from tasklist import TaskList
 from savetask import SaveTask
-from service import PATTERN_TIME, FIELDNAMES
+from utils import PATTERN_TIME, FIELDNAMES
 from filemanager import FileManager
 
 from hinting import Scheme_name, Scheme, TaskType, TaskListType 
 
-
+ 
 class App(MoveWin, SaveTask):
     
     def __init__(self, scheme_name: Scheme_name,
@@ -40,6 +40,7 @@ class App(MoveWin, SaveTask):
         self._set_colorscheme()
         self._current_time()
         self._load_tasks()
+        self._save_existed_tasks()
 
     def _general_properties(self) -> None:
         self.font = tkinter.font.nametofont("TkDefaultFont")
@@ -123,12 +124,19 @@ class App(MoveWin, SaveTask):
         self.after(1000, self._check_tasks)
 
     def _get_list(self) -> None:
+        """Get list of today's tasks"""
         self.but_list["state"] = "disable"
         self.wait_window(TaskList(self._tasks, self.scheme))
         try:
             self.but_list["state"] = "active"
         except tk.TclError:
             sys.exit
+
+    def _save_existed_tasks(self):
+        """save tasks every 1 minute"""
+        self._save_tasks(self._tasks, self.fname)
+        self.after(60000, self._save_existed_tasks)
+
 
     def _app_exit(self) -> None:
         """Get taskss from open TaskWinow, write down 
@@ -151,6 +159,7 @@ class App(MoveWin, SaveTask):
 
 
 if __name__ == "__main__":        
+
     fname = "taskstemp.csv"
     with FileManager(fname):
         root = App("deep blue", fname)

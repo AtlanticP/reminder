@@ -13,7 +13,7 @@ from taskwindow import TaskWindow
 from savetask import SaveTask
 from colorschemes import COLORS
 from tasklist import TaskList
-from service import get_text, PATTERN_TIME
+from utils import get_text, PATTERN_TIME
 from configuration import valid_line, get_config, Config
 
 import typing as tp
