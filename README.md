@@ -3,9 +3,12 @@
 Код написан на python 3.10.0 с поддержкой аннотации типов. Т.о. возможна несовместимость с более ранними версиями.
 ### Demo
 <img src="media/reminder.gif" width=420 height=300>
+
 ### Цветовая схема
 По умолчанию стоит colorscheme со значением ***brown***. Но можно заменить на ***deep blue*** в файле конфигурации ***config.cfg***.
-<img src="media/deepblue.gif" width=420 height=300>
+
+<img src="media/deepblue.jpg" width=300 height=300>
+
 ### Установка в Ubuntu
 Создаем скрипт:
 ```
@@ -30,7 +33,7 @@ pip install -r $path_/reminder/requirements.txt
 $ sudo chmod +x $HOME/Descktop/reminstall.sh
 $ source $HOME/Descktop/reminstall.sh
 ```
-NOTE: Если установка осуществляется вручную, то для запуска напоминалки необходимы два пакета, указанные в ***requirements.txt***: 
+ЗАМЕЧАНИЕ: Если установка осуществляется вручную, то для запуска напоминалки необходимы два пакета, указанные в ***requirements.txt***: 
 ~~~
 path_=$HOME/Apps    # use your path
 pip install -r $path_/reminder/requirements.txt
@@ -70,7 +73,7 @@ $path_/.venv/bin/python $path_/main.py &
 $ sudo chmod +x $HOME/Apps/reminder/autostart.sh
 ```
 ### Файл конфигурации ***config.cfg***
-По умолчанию создается файл конфигурации в корневой папке SimpleReminder (там же где располагается ***main.py***). В нем пропиывается путь к файлу ***tasks.csv***, где сохраняются задачи. 
+По умолчанию создается файл конфигурации в корневой папке SimpleReminder. В нем пропиывается путь к файлу ***tasks.csv***, где сохраняются задачи. 
 Также в этом файле можно изменить цветовую схему, указав:
 ```
 scheme_name = deep blue
