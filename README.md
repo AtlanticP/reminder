@@ -1,19 +1,13 @@
 # Simple Reminder
 Простая "open source" напоминалка для различных задач. Мною используется в основом в качестве повторения пройденного материала.
+Код написан на python 3.10.0 с поддержкой аннотации типов. Т.о. возможна несовместимость с более ранними версиями.
 ### Demo
 <img src="media/reminder.gif" width=420 height=300>
-
+### Цветовая схема
+По умолчанию стоит colorscheme со значением ***brown***. Но можно заменить на ***deep blue*** в файле конфигурации ***config.cfg***.
+<img src="media/deepblue.gif" width=420 height=300>
 ### Установка в Ubuntu
-Возможно для установки виртуального окружения может понадобится **python3.x-venv** пакет. 
-```
-$ python --version
-3.8.10
-```
-В моем случае пакет версии **python3.8-venv** .
-```
-$ sudo apt install python3.8-venv
-```
-Создаем скрипт 
+Создаем скрипт:
 ```
 $ vi $HOME/Desktop/reminstall.sh
 ```
@@ -25,7 +19,7 @@ path_=$HOME/Apps    # use your path
 mkdir $path_
 git clone https://github.com/AtlanticP/reminder $path_/reminder
 python3 -m venv $path_/reminder/.venv    # создание виртуального окружения
-source $path_/reminder/.note/bin/activate    # активация виртуального окружения
+source $path_/reminder/.venv/bin/activate    # активация виртуального окружения
 pip install --upgrade pip    # установка зависимостей
 pip install -r $path_/reminder/requirements.txt
 ~~~
@@ -69,9 +63,15 @@ $ vi $HOME/Apps/reminder/autostart.sh
 ~~~
 #!/bin/bash
 path_=$HOME/Apps/reminder
-$path_/.note/bin/python $path_/main.py &
+$path_/.venv/bin/python $path_/main.py &
 ~~~
 Делаем ***autostart.sh*** файл исполняемым:
 ```
 $ sudo chmod +x $HOME/Apps/reminder/autostart.sh
+```
+### Файл конфигурации ***config.cfg***
+По умолчанию создается файл конфигурации в корневой папке SimpleReminder (там же где располагается ***main.py***). В нем пропиывается путь к файлу ***tasks.csv***, где сохраняются задачи. 
+Также в этом файле можно изменить цветовую схему, указав:
+```
+scheme_name = deep blue
 ```
