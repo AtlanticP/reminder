@@ -44,7 +44,7 @@ with open(PATH_CONFIG, "r") as file:
             input("press <Enter> key to exit")
             sys.exit()
 
-
-app = App(**configs)    # type: ignore
-app.mainloop()
+if __name__ == "__main__":
+    app = App(**configs)    # type: ignore
+    app.mainloop()
 

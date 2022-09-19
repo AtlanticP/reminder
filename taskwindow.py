@@ -31,6 +31,7 @@ class TaskWindow(tk.Toplevel):
     def _general_properties(self) -> None:
         self.title("Task")
         self.attributes("-topmost", 1)
+        self.resizable(True, False)
         self._position_window()
 
     def _position_window(self) -> None:
